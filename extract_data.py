@@ -37,7 +37,7 @@ class Extract:
             teams = game_strip.find_all('h2')
             home_team = teams[1].text.strip()
             away_team = teams[0].text.strip()
-            scores = game_strip.find_all(class_='Gamestrip__ScoreContainer')
+            scores = game_strip.find_all(class_='Gamestrip__Score')
             if len(scores) >= 2:
                 home_score = extract_score(scores[1].text)
                 away_score = extract_score(scores[0].text)

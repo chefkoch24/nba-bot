@@ -35,7 +35,8 @@ def get_all_data(directory_path):
 
 
 def extract_score(input: str):
-    return ''.join(re.findall(r'\d', input))
+    match = re.search(r'\d+', input)
+    return str(match.group())
 
 
 def get_scrape_date(date: datetime.datetime) -> str:
