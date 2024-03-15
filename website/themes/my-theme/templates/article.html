@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="columns">
+            <div class="column is-three-quarters mt-5">
+                <h2 class="title">{{ article.title }}</h2>
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column is-three-quarters">
+                {{ article.content }}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

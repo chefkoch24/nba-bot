@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mt-5"></div>
+<div class="container mt-5">
+    {% for article in (articles_page.object_list if articles_page else articles) %}
+       <div class="card mt-3">
+            <div class="card-content">
+                <div class="content">
+                    <h5 class="title">{{ article.title }}</h5>
+                    <p>{{ article.summary }}</p>
+                    <a href="{{ SITEURL }}/{{ article.url }}" class="button is-primary">Read More</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% include 'includes/pagination.html' %}
+{% endblock content %}

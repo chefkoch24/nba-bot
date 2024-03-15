@@ -2,6 +2,7 @@ import json
 import os
 import re
 import datetime
+import boto3
 
 
 def open_json(file_path):
@@ -49,3 +50,68 @@ def get_scrape_date(date: datetime.datetime) -> str:
     else:
         day = date.day
     return f'{date.year}{month}{day}'
+
+def write_json_to_s3(json_content, bucket_name, key):
+    """
+    Writes JSON content to an S3 bucket.
+
+    Parameters:
+    - json_content: Dictionary, the content to be written as JSON.
+    - bucket_name: String, the name of the S3 bucket.
+    - key: String, the object key (path) within the S3 bucket.
+
+    Returns:
+    - None
+    """
+    s3 = boto3.client('s3')
+    # Convert Python dictionary to JSON string
+    json_data = json.dumps(json_content, indent=2)
+    s3.put_object(Body=json_data, Bucket=bucket_name, Key=key)
+
+
+
+def read_json_from_s3(bucket_name, folder_path):
+    """
+    Reads all JSON files from a specified folder within an S3 bucket.
+
+    Parameters:
+    - bucket_name: String, the name of the S3 bucket.
+    - folder_path: String, the folder path within the S3 bucket.
+
+    Returns:
+    - List of dictionaries containing JSON content from each file.
+    """
+    s3 = boto3.client('s3')
+
+    # List all objects in the specified folder
+    try:
+        response = s3.list_objects(Bucket=bucket_name, Prefix=folder_path)
+    except Exception as e:
+        print(f"Error listing objects in S3: {e}")
+        return []
+
+    # Read JSON content from each file
+    json_contents = []
+    for obj in response.get('Contents', []):
+        try:
+            file_content = s3.get_object(Bucket=bucket_name, Key=obj['Key'])['Body'].read().decode('utf-8')
+            json_contents.append(json.loads(file_content))
+        except Exception as e:
+            print(f"Error reading JSON from {obj['Key']}: {e}")
+
+    return json_contents
+
+
+def create_email_content(date):
+    scrape_date = get_scrape_date(date)
+    directory_path = f'generated_data/{scrape_date}'
+    body = ""
+    data = get_all_data(directory_path)
+    for d in data:
+        headline = f"<strong>{d['home_team']} {d['home_score']} - {d['away_score']} {d['away_team']} </strong> <br/>"
+        game_cast_url = d['game_cast_url']
+        game_cast_url = f'<a href="{game_cast_url}">ESPN Game</a>'
+        box_score_url = d['box_score_url']
+        box_score_url = f'<a href="{box_score_url}">Box Score</a>'
+        body = body + headline + d['generated_content'] + "<br/>" + box_score_url + ", " + game_cast_url + "<br/><br/>"
+    return body

@@ -3,7 +3,10 @@ import os
 from bs4 import BeautifulSoup
 import requests
 import datetime
-from utils import save_json, extract_score, get_scrape_date
+
+from tqdm import tqdm
+
+from utils import save_json, extract_score, get_scrape_date, write_json_to_s3
 
 
 class Extract:
@@ -29,7 +32,7 @@ class Extract:
                 game_ids.append(game.get('id'))
         else:
             print(f"Failed to retrieve the page. Status code: {response.status_code}")
-        for game_id in game_ids:
+        for game_id in tqdm(game_ids):
             game_url = f'https://www.espn.com/nba/recap/_/gameId/{game_id}'
             response = requests.get(game_url, headers=self.headers)
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -63,6 +66,7 @@ class Extract:
                        'box_score_url': f"https://www.espn.com/nba/boxscore/_/gameId/{game_id}",
                        'game_cast_url':f"https://www.espn.com/nba/game/_/gameId/{game_id}"}
             save_json(content, file_path)
+            write_json_to_s3(json_content=content, bucket_name='nba-bot', key=file_path)
 
 
 
