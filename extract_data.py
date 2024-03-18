@@ -29,7 +29,7 @@ class Extract:
         scrape_date = get_scrape_date(date)
         driver = webdriver.Chrome(options=self.chrome_options)
         driver.get(self.base_url + scrape_date)
-        time.sleep(1)
+        time.sleep(3)
         try:
             # Find elements based on their class names
             elements = find_elements_with_retry(driver, By.CSS_SELECTOR, value='[class^="GameCard"]')

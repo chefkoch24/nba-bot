@@ -11,7 +11,6 @@ from pelican import main as pelican_main
 from pelican.server import ComplexHTTPRequestHandler, RootedHTTPServer
 from pelican.settings import DEFAULT_CONFIG, get_settings_from_file
 
-from downloader import download
 
 OPEN_BROWSER_ON_SERVE = True
 SETTINGS_FILE_BASE = "pelicanconf.py"
@@ -42,7 +41,6 @@ def clean(c):
 @task
 def build(c):
     """Build local version of site"""
-    download()
     pelican_run("-s {settings_base}".format(**CONFIG))
 
 

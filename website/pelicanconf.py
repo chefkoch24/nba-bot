@@ -7,7 +7,7 @@ PATH = "content"
 STATIC_PATHS = ['pages', 'articles']
 PAGE_PATHS = ['pages']
 ARTICLE_PATHS = ['articles']
-
+THEME = "themes/my-theme/"
 TIMEZONE = 'Europe/Berlin'
 
 DEFAULT_LANG = 'en'
@@ -37,8 +37,6 @@ SOCIAL = (
     ("You can add links in your config file", "#"),
     ("Another social link", "#"),
 )
-
-THEME = "themes/my-theme"
 
 
 DISPLAY_PAGES_ON_MENU = True
