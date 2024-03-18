@@ -1,10 +1,5 @@
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-AUTHOR = os.getenv('SITENAME')
-SITENAME = os.getenv('SITENAME')
+AUTHOR = 'LastNightScores'
+SITENAME = 'LastNightScores'
 SITEURL = ""
 
 
