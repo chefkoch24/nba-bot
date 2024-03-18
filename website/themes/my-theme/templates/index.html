@@ -2,15 +2,13 @@
 
 {% block content %}
 <div class="mt-5"></div>
-<div class="container mt-5">
+<div class="container mt-3">
     {% for article in (articles_page.object_list if articles_page else articles) %}
        <div class="card mt-3">
-            <div class="card-content">
-                <div class="content">
-                    <h5 class="title">{{ article.title }}</h5>
-                    <p>{{ article.summary }}</p>
-                    <a href="{{ SITEURL }}/{{ article.url }}" class="button is-primary">Read More</a>
-                </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ article.title }}</h5>
+                <p class="card-text">{{ article.summary }}</p>
+                <a href="{{ SITEURL }}/{{ article.url }}" class="btn btn-primary">Read More</a>
             </div>
         </div>
     {% endfor %}

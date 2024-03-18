@@ -2,7 +2,10 @@ import json
 import os
 import re
 import datetime
+import time
+
 import boto3
+from selenium.common import NoSuchElementException
 
 
 def open_json(file_path):
@@ -40,6 +43,15 @@ def extract_score(input: str):
     return str(match.group())
 
 
+
+def get_game_id(url: str):
+    # Extract digits using regular expression
+    digits = re.findall(r'\d+', url)
+    # Convert list of strings to integers
+    digits = [str(d) for d in digits]
+    return ''.join(digits)
+
+
 def get_scrape_date(date: datetime.datetime) -> str:
     if date.month < 10:
         month = f'0{date.month}'
@@ -49,7 +61,50 @@ def get_scrape_date(date: datetime.datetime) -> str:
         day = f'0{date.day}'
     else:
         day = date.day
-    return f'{date.year}{month}{day}'
+    #return f'{date.year}{month}{day}'
+    return f'{date.year}-{month}-{day}'
+
+def find_element_with_retry(driver, by, value, max_retries=5, retry_interval=2):
+        """
+        Find the element with retry logic.
+        :param driver: Selenium WebDriver instance.
+        :param by: The locating mechanism.
+        :param value: The value to search for.
+        :param max_retries: Maximum number of retries.
+        :param retry_interval: Interval between retries.
+        :return: The found element or None if not found.
+        """
+        retries = 0
+        while retries < max_retries:
+            try:
+                element = driver.find_element(by=by, value=value)
+                return element
+            except NoSuchElementException:
+                print("Element not found. Retrying...")
+                time.sleep(retry_interval)
+                retries += 1
+        return None
+
+def find_elements_with_retry(driver, by, value, max_retries=5, retry_interval=2):
+        """
+        Find the element with retry logic.
+        :param driver: Selenium WebDriver instance.
+        :param by: The locating mechanism.
+        :param value: The value to search for.
+        :param max_retries: Maximum number of retries.
+        :param retry_interval: Interval between retries.
+        :return: The found element or None if not found.
+        """
+        retries = 0
+        while retries < max_retries:
+            try:
+                element = driver.find_elements(by=by, value=value)
+                return element
+            except NoSuchElementException:
+                print("Element not found. Retrying...")
+                time.sleep(retry_interval)
+                retries += 1
+        return None
 
 def write_json_to_s3(json_content, bucket_name, key):
     """

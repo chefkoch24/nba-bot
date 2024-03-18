@@ -1,5 +1,10 @@
-AUTHOR = 'NBA Daily'
-SITENAME = 'NBA Daily'
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+AUTHOR = os.getenv('SITENAME')
+SITENAME = os.getenv('SITENAME')
 SITEURL = ""
 
 
@@ -29,7 +34,7 @@ LINKS = (
 
 MENUITEMS = (
     ('Home', '/'),
-    ('About us', '/pages/about.html'),
+    ('About', '/pages/about.html'),
 )
 
 # Social widget

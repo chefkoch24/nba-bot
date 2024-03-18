@@ -19,6 +19,6 @@ while scrape_date < datetime.datetime.today() - datetime.timedelta(days=1):
         rag = RAG()
         rag.generate(scrape_date)
     g = Generator()
-    g.generate(scrape_date)
+    g.generate()
     scrape_date = scrape_date + datetime.timedelta(days=1)
 

@@ -17,7 +17,7 @@ class Email:
         for d in data:
             headline = f"<strong>{d['home_team']} {d['home_score']} - {d['away_score']} {d['away_team']} </strong> <br/>"
             game_cast_url = d['game_cast_url']
-            game_cast_url = f'<a href="{game_cast_url}">ESPN Game</a>'
+            game_cast_url = f'<a href="{game_cast_url}">Game Recap</a>'
             box_score_url = d['box_score_url']
             box_score_url = f'<a href="{box_score_url}">Box Score</a>'
             body = body + headline + d['generated_content'] + "<br/>" + box_score_url + ", " + game_cast_url + "<br/><br/>"

@@ -30,3 +30,6 @@ wheel==0.41.2
 boto3==1.34.20
 botocore==1.34.20
 pelican~=4.9.1
+invoke~=2.2.0
+selenium~=4.18.1
+nba_api~=1.4.1
