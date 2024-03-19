@@ -5,3 +5,31 @@
 .navbar-item:hover{
     background-color: #0053a9 !important;
 }
+
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.wrapper {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content {
+            flex: 1;
+            /* Add padding to the bottom to prevent content from overlapping with footer */
+            padding-bottom: 60px; /* Adjust height of the footer */
+        }
+
+        .footer {
+            flex-shrink: 0;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            background-color: #f8f9fa;
+            padding: 20px 0;
+            text-align: center;}
