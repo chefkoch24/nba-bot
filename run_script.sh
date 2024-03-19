@@ -13,4 +13,4 @@ echo $(date +"%D")
 
 git commit -am "$(date +"%D")"
 
-#git push
+git push
