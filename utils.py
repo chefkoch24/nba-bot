@@ -5,7 +5,7 @@ import datetime
 import time
 
 import boto3
-from selenium.common import NoSuchElementException
+from selenium.common import NoSuchElementException, StaleElementReferenceException
 
 
 def open_json(file_path):
@@ -64,7 +64,7 @@ def get_scrape_date(date: datetime.datetime) -> str:
     #return f'{date.year}{month}{day}'
     return f'{date.year}-{month}-{day}'
 
-def find_element_with_retry(driver, by, value, max_retries=5, retry_interval=2):
+def find_element_with_retry(driver, by, value, max_retries=100, retry_interval=2, refresh_threshold=5):
         """
         Find the element with retry logic.
         :param driver: Selenium WebDriver instance.
@@ -75,17 +75,22 @@ def find_element_with_retry(driver, by, value, max_retries=5, retry_interval=2):
         :return: The found element or None if not found.
         """
         retries = 0
+        refresh_count = 0
         while retries < max_retries:
             try:
                 element = driver.find_element(by=by, value=value)
                 return element
-            except NoSuchElementException:
-                print("Element not found. Retrying...")
-                time.sleep(retry_interval)
-                retries += 1
+            except StaleElementReferenceException:
+                print("Stale element encountered. Retrying...")
+            retries += 1
+            if retries % refresh_threshold == 0:
+                print(f"Refreshing page (attempt {refresh_count + 1})...")
+                driver.refresh()
+                refresh_count += 1
+                time.sleep(retry_interval)  # Add a wait after refreshing the page
         return None
 
-def find_elements_with_retry(driver, by, value, max_retries=5, retry_interval=2):
+def find_elements_with_retry(driver, by, value, max_retries=100, retry_interval=2, refresh_threshold=5):
         """
         Find the element with retry logic.
         :param driver: Selenium WebDriver instance.
@@ -96,14 +101,19 @@ def find_elements_with_retry(driver, by, value, max_retries=5, retry_interval=2)
         :return: The found element or None if not found.
         """
         retries = 0
+        refresh_count = 0
         while retries < max_retries:
             try:
                 element = driver.find_elements(by=by, value=value)
                 return element
-            except NoSuchElementException:
-                print("Element not found. Retrying...")
-                time.sleep(retry_interval)
-                retries += 1
+            except StaleElementReferenceException:
+                print("Stale element encountered. Retrying...")
+            retries += 1
+            if retries % refresh_threshold == 0:
+                print(f"Refreshing page (attempt {refresh_count + 1})...")
+                driver.refresh()
+                refresh_count += 1
+                time.sleep(retry_interval)  # Add a wait after refreshing the page
         return None
 
 def write_json_to_s3(json_content, bucket_name, key):

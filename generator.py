@@ -7,8 +7,7 @@ from botocore.exceptions import ClientError
 load_dotenv()
 
 class Generator:
-    def generate(self):
-        date = datetime.datetime.today()
+    def generate(self, date):
         title = date.strftime("%d.%m.%Y")
         scrape_date = get_scrape_date(date - datetime.timedelta(days=1))
         directory_path = f'generated_data/{scrape_date}'

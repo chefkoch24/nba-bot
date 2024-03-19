@@ -18,4 +18,4 @@ scrape_date = datetime.datetime.now() - datetime.timedelta(days=1)
 #email.send_email(subject, os.getenv('RECEIVE_EMAIL'), scrape_date)
 
 g = Generator()
-g.generate()
+g.generate(datetime.datetime.today())
