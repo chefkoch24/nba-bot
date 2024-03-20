@@ -1,6 +1,7 @@
 import os
 import time
-from selenium import webdriver
+
+from dotenv import load_dotenv
 from selenium.common import TimeoutException, NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 import nba_api.live.nba.endpoints as nba
@@ -13,8 +14,11 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 
 from utils import get_scrape_date, get_game_id, find_elements_with_retry, find_element_with_retry, save_json, \
-    write_json_to_s3
+    write_json_to_s3, str2bool
 
+load_dotenv()
+
+IS_SERVER = str2bool(os.getenv('IS_SERVER'))
 
 class Extract:
 
@@ -24,13 +28,21 @@ class Extract:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         self.chrome_options = Options()
-        self.chrome_options.add_argument('--headless')  # Enable headless mode
-
         # Set up Selenium with Chrome WebDriver and headless mode
+        self.chrome_options.add_argument('--headless')
+        self.chrome_options.add_argument("--headless")
+        self.chrome_options.add_argument("--disable-gpu")
+        self.chrome_options.add_argument("--no-sandbox")
+        self.chrome_options.add_argument("enable-automation")
+        self.chrome_options.add_argument("--disable-infobars")
+        self.chrome_options.add_argument("--disable-dev-shm-usage")
 
     def extract(self, date):
         scrape_date = get_scrape_date(date)
-        driver = webdriver.Chrome(service=ChromeService(), options=self.chrome_options)
+        if IS_SERVER:
+            driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=self.chrome_options)
+        else:
+            driver = webdriver.Chrome(options=self.chrome_options)
         driver.get(self.base_url + scrape_date)
         time.sleep(3)
         try:
@@ -49,8 +61,7 @@ class Extract:
                     if story:
                         game_stories.append(story.text)
                     else:
-                        game_stories.append(
-                            "Game postponed")# Handle case where game story element is not found after retry
+                        game_stories.append("Game postponed") # Handle case where game story element is not found after retry
                 except NoSuchElementException:
                     game_stories.append("No game story found")  # Handle case where game story element is not found
             driver.quit()

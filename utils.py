@@ -3,6 +3,7 @@ import os
 import re
 import datetime
 import time
+from argparse import ArgumentTypeError
 
 import boto3
 from selenium.common import NoSuchElementException, StaleElementReferenceException
@@ -180,3 +181,13 @@ def create_email_content(date):
         box_score_url = f'<a href="{box_score_url}">Box Score</a>'
         body = body + headline + d['generated_content'] + "<br/>" + box_score_url + ", " + game_cast_url + "<br/><br/>"
     return body
+
+def str2bool(val: str):
+    if isinstance(val, bool):
+        return val
+    if val.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif val.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise ArgumentTypeError('Expected boolean value.')
