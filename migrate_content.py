@@ -10,7 +10,7 @@ from utils import get_scrape_date
 
 load_dotenv()
 
-scrape_date = datetime.datetime(2023, 10, 24)
+scrape_date = datetime.datetime(2024, 3, 18)
 while scrape_date < datetime.datetime.today() - datetime.timedelta(days=1):
     print(scrape_date)
     generated_path = f'generated_data/{get_scrape_date(scrape_date)}'

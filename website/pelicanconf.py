@@ -41,7 +41,7 @@ SOCIAL = (
 
 DISPLAY_PAGES_ON_MENU = True
 
-DEFAULT_PAGINATION = 7
+DEFAULT_PAGINATION = 30
 
 
 # Uncomment following line if you want document-relative URLs when developing

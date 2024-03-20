@@ -9,6 +9,8 @@ python main.py
 # commit and push the current changes
 echo $(date +"%D")
 
-git commit -am "$(date +"%D")"
+git add .
+
+git commit -m "$(date +"%D")"
 
 git push
