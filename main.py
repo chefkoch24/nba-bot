@@ -8,8 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-#scrape_date = datetime.datetime.now() - datetime.timedelta(days=1)
-scrape_date = datetime.date(year=2024, month=3,day=19)- datetime.timedelta(days=1)
+scrape_date = datetime.datetime.now() - datetime.timedelta(days=1)
 extractor = Extract()
 extractor.extract(scrape_date)
 rag = RAG()
