@@ -1,9 +1,7 @@
 #!/bin/bash
 
-cd nba-bot
-
 # Activate the virtual environment
-source venv/bin/activate
+source myenv/bin/activate
 
 # Run the Python script
 python main.py

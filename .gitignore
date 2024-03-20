@@ -4,3 +4,8 @@ website/output
 .env
 
 .idea
+
+myenv
+
+*.cer
+*.pem
