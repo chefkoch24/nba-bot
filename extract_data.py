@@ -8,6 +8,9 @@ import nba_api.live.nba.endpoints as nba
 # Set up Chrome options for headless mode
 from selenium.webdriver.common.by import By
 from tqdm import tqdm
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 
 from utils import get_scrape_date, get_game_id, find_elements_with_retry, find_element_with_retry, save_json, \
     write_json_to_s3
@@ -27,7 +30,7 @@ class Extract:
 
     def extract(self, date):
         scrape_date = get_scrape_date(date)
-        driver = webdriver.Chrome(options=self.chrome_options)
+        driver = webdriver.Chrome(service=ChromeService(), options=self.chrome_options)
         driver.get(self.base_url + scrape_date)
         time.sleep(3)
         try:
