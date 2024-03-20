@@ -9,3 +9,5 @@ myenv
 
 *.cer
 *.pem
+
+__pycache__/
