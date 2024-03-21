@@ -1,0 +1,76 @@
+  0%|          | 0/8 [00:00<?, ?it/s] 12%|█▎        | 1/8 [00:07<00:49,  7.03s/it] 25%|██▌       | 2/8 [00:13<00:40,  6.74s/it] 38%|███▊      | 3/8 [00:24<00:43,  8.75s/it] 50%|█████     | 4/8 [00:43<00:50, 12.53s/it] 62%|██████▎   | 5/8 [00:48<00:29,  9.92s/it] 75%|███████▌  | 6/8 [00:53<00:16,  8.25s/it] 75%|███████▌  | 6/8 [00:58<00:19,  9.71s/it]
+Traceback (most recent call last):
+  File "/home/ec2-user/nba-bot/main.py", line 13, in <module>
+    extractor.extract(scrape_date)
+  File "/home/ec2-user/nba-bot/extract_data.py", line 60, in extract
+    story = find_element_with_retry(driver, By.CSS_SELECTOR, '[class^="GameStory"]')
+  File "/home/ec2-user/nba-bot/utils.py", line 82, in find_element_with_retry
+    element = driver.find_element(by=by, value=value)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/selenium/webdriver/remote/webdriver.py", line 741, in find_element
+    return self.execute(Command.FIND_ELEMENT, {"using": by, "value": value})["value"]
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/selenium/webdriver/remote/webdriver.py", line 345, in execute
+    response = self.command_executor.execute(driver_command, params)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/selenium/webdriver/remote/remote_connection.py", line 302, in execute
+    return self._request(command_info[0], url, body=data)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/selenium/webdriver/remote/remote_connection.py", line 322, in _request
+    response = self._conn.request(method, url, body=body, headers=headers)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/urllib3/request.py", line 81, in request
+    return self.request_encode_body(
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/urllib3/request.py", line 173, in request_encode_body
+    return self.urlopen(method, url, **extra_kw)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/urllib3/poolmanager.py", line 376, in urlopen
+    response = conn.urlopen(method, u.request_uri, **kw)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/urllib3/connectionpool.py", line 715, in urlopen
+    httplib_response = self._make_request(
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/urllib3/connectionpool.py", line 467, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/urllib3/connectionpool.py", line 462, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib64/python3.9/http/client.py", line 1377, in getresponse
+    response.begin()
+  File "/usr/lib64/python3.9/http/client.py", line 320, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib64/python3.9/http/client.py", line 281, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib64/python3.9/socket.py", line 704, in readinto
+    return self._sock.recv_into(b)
+KeyboardInterrupt
+  0%|          | 0/8 [00:00<?, ?it/s] 12%|█▎        | 1/8 [00:05<00:38,  5.47s/it] 25%|██▌       | 2/8 [00:13<00:41,  6.84s/it] 25%|██▌       | 2/8 [00:25<01:15, 12.61s/it]
+Traceback (most recent call last):
+  File "/home/ec2-user/nba-bot/main.py", line 13, in <module>
+    extractor.extract(scrape_date)
+  File "/home/ec2-user/nba-bot/extract_data.py", line 62, in extract
+    game_stories.append(story.text)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/selenium/webdriver/remote/webelement.py", line 90, in text
+    return self._execute(Command.GET_ELEMENT_TEXT)["value"]
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/selenium/webdriver/remote/webelement.py", line 395, in _execute
+    return self._parent.execute(command, params)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/selenium/webdriver/remote/webdriver.py", line 345, in execute
+    response = self.command_executor.execute(driver_command, params)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/selenium/webdriver/remote/remote_connection.py", line 302, in execute
+    return self._request(command_info[0], url, body=data)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/selenium/webdriver/remote/remote_connection.py", line 322, in _request
+    response = self._conn.request(method, url, body=body, headers=headers)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/urllib3/request.py", line 77, in request
+    return self.request_encode_url(
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/urllib3/request.py", line 99, in request_encode_url
+    return self.urlopen(method, url, **extra_kw)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/urllib3/poolmanager.py", line 376, in urlopen
+    response = conn.urlopen(method, u.request_uri, **kw)
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/urllib3/connectionpool.py", line 715, in urlopen
+    httplib_response = self._make_request(
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/urllib3/connectionpool.py", line 467, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/home/ec2-user/nba-bot/myenv/lib64/python3.9/site-packages/urllib3/connectionpool.py", line 462, in _make_request
+    httplib_response = conn.getresponse()
+  File "/usr/lib64/python3.9/http/client.py", line 1377, in getresponse
+    response.begin()
+  File "/usr/lib64/python3.9/http/client.py", line 320, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib64/python3.9/http/client.py", line 281, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/usr/lib64/python3.9/socket.py", line 704, in readinto
+    return self._sock.recv_into(b)
+KeyboardInterrupt
