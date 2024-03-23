@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from lambda_functions.nba_scraper.src.utils  import get_all_data, get_scrape_date, read_json_from_s3
+from utils import get_all_data, get_scrape_date, read_json_from_s3
 import boto3
 from botocore.exceptions import ClientError
 load_dotenv()

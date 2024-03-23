@@ -1,7 +1,7 @@
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
-from lambda_functions.nba_scraper.src.utils  import get_all_data, save_json, get_scrape_date, write_json_to_s3, read_json_from_s3
+from utils import get_all_data, save_json, get_scrape_date, write_json_to_s3, read_json_from_s3
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")

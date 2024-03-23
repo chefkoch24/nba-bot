@@ -3,8 +3,8 @@ import datetime
 import json
 import os
 
-from lambda_functions.nba_scraper.src.send_email import Email
-from lambda_functions.nba_scraper.src.generator import Generator
+from send_email import Email
+from generator import Generator
 
 
 def lambda_handler(event, context):

@@ -9,7 +9,7 @@ from selenium.webdriver.common.by import By
 from tqdm import tqdm
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
-from lambda_functions.nba_scraper.src.utils import get_scrape_date, get_game_id, find_elements_with_retry, find_element_with_retry, save_json, \
+from utils import get_scrape_date, get_game_id, find_elements_with_retry, find_element_with_retry, save_json, \
     write_json_to_s3, str2bool
 
 load_dotenv()

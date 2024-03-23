@@ -1,6 +1,6 @@
 import datetime
 import json
-from lambda_functions.nba_scraper.src.rag import RAG
+from rag import RAG
 
 
 def lambda_handler(event, context):

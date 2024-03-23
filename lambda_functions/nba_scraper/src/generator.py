@@ -2,7 +2,7 @@ import datetime
 import os
 
 from dotenv import load_dotenv
-from lambda_functions.nba_scraper.src.utils import get_all_data, get_scrape_date, read_json_from_s3
+from utils import get_all_data, get_scrape_date, read_json_from_s3
 import git
 load_dotenv()
 

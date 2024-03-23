@@ -2,6 +2,7 @@ extracted_data
 generated_data
 website/output
 lambda_functions/nba_scraper/.env
+*.env
 
 .idea
 
