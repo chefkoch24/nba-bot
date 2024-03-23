@@ -1,7 +1,8 @@
 extracted_data
 generated_data
 website/output
-.env
+lambda_functions/nba_scraper/.env
+*.env
 
 .idea
 
@@ -11,3 +12,5 @@ myenv
 *.pem
 
 __pycache__/
+/lambda_functions/nba_scraper/.aws-sam/
+/lambda_functions/nba_scraper/.env

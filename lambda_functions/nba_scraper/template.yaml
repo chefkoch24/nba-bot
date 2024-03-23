@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  python3.10
+
+  Sample SAM Template for nba-scraper
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 900
+    MemorySize: 10240
+
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: nba-scraper
+  NBAScrapeFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command:
+          - scrape.lambda_handler
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          IS_SERVER: True
+
+      Events:
+        NBAScrapeAPI:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /nba-scrape
+            Method: get
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./src
+      DockerTag: python3.10-v1
+
+  NBAGenerateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command:
+          - generate.lambda_handler
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          API_KEY: ${API_KEY}
+      Events:
+        #S3Event:
+        #  Type: S3
+        #  Properties:
+        #    Bucket: !Ref MyS3Bucket
+        #    Events: s3:ObjectCreated:*
+        #    Filter:
+        #      S3Key:
+        #        Rules:
+        #          - Name: prefix
+        #            Value: extracted_data/
+        NBAGenerateApi:
+          Type: Api
+          Properties:
+            Path: /nba-generate
+            Method: get
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./src
+      DockerTag: python3.10-v1
+
+  NBAPublishFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command:
+          - publish.lambda_handler
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          SENDER_EMAIL: ${SENDER_EMAIL}
+          SENDER_PASSWORD: ${SENDER_PASSWORD}
+          RECEIVE_EMAIL: ${RECEIVE_EMAIL}
+          SITENAME: ${SITENAME}
+          GITHUB_USERNAME: ${GITHUB_USERNAME}
+          GITHUB_TOKEN: ${GITHUB_TOKEN}
+      Events:
+        #S3Event:
+        #  Type: S3
+        #  Properties:
+        #    Bucket: !Ref MyS3Bucket
+        #    Events: s3:ObjectCreated:*
+        #    Filter:
+        #      S3Key:
+        #        Rules:
+        #          - Name: prefix
+        #            Value: generated_data/
+        NBAPublishApi:
+          Type: Api
+          Properties:
+            Path: /nba-publish
+            Method: get
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./src
+      DockerTag: python3.10-v1
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  NBAScrapeApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  NBAScrapeFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt NBAScrapeFunction.Arn
+  NBAScrapeFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt NBAScrapeFunctionRole.Arn
+  NBAGenerateApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  NBAGenerateFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt NBAGenerateFunction.Arn
+  NBAGenerateFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt NBAGenerateFunctionRole.Arn
+
+  NBAPublishApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  NBAPublishFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt NBAGenerateFunction.Arn
+  NBAPublishFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt NBAGenerateFunctionRole.Arn
+
