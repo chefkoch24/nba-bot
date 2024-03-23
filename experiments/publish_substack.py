@@ -1,11 +1,9 @@
-import os
-
 from substack.post import Post
 
-from utils import get_all_data, get_scrape_date
+from experiments import get_all_data, get_scrape_date
 
 
-class Publish:
+class PublishSubstack:
 
     def publish(self, substack, title, body, date):
         user_id = substack.get_user_id()

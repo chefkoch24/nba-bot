@@ -1,9 +1,6 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import os
 from dotenv import load_dotenv
-from utils import get_all_data, get_scrape_date
+from lambda_functions.nba_scraper.src.utils  import get_all_data, get_scrape_date, read_json_from_s3
 import boto3
 from botocore.exceptions import ClientError
 load_dotenv()
@@ -13,7 +10,7 @@ class Email:
         scrape_date = get_scrape_date(date)
         directory_path = f'generated_data/{scrape_date}'
         body = ""
-        data = get_all_data(directory_path)
+        data = read_json_from_s3(bucket_name='nba-scraper', folder_path=directory_path)#get_all_data(directory_path)
         for d in data:
             headline = f"<strong>{d['home_team']} {d['home_score']} - {d['away_score']} {d['away_team']} </strong> <br/>"
             game_cast_url = d['game_cast_url']
