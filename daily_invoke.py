@@ -1,7 +1,7 @@
 import boto3
 
 # Create a Lambda client
-lambda_client = boto3.client('lambda')
+lambda_client = boto3.client('lambda', region_name='eu-central-1')
 
 # Invoke the Lambda function asynchronously
 response = lambda_client.invoke(
