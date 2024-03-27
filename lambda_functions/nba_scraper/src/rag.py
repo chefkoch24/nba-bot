@@ -17,7 +17,7 @@ class RAG:
             if d['home_score'] != 0 and d['away_score'] != 0:
                 # generate prompt
                 prompt = f"""Summarize this game recap in one paragraph including the most interesting facts 
-                about the game including the final score as a headline. 
+                about the game. Do not write in all caps or use paragraphs without rephrasing. 
                 \n {d['game_recap']}"""
                 # request model
                 response = self.client.chat.completions.create(

@@ -16,6 +16,20 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: nba-scraper
+  NBATriggerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Zip
+      Handler: src.trigger.lambda_handler
+      Runtime: python3.10
+      Architectures:
+        - x86_64
+      Events:
+        NBATriggerAPI:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /nba-trigger
+            Method: get
   NBAScrapeFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -28,7 +42,6 @@ Resources:
       Environment:
         Variables:
           IS_SERVER: True
-
       Events:
         NBAScrapeAPI:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -143,4 +156,14 @@ Outputs:
   NBAPublishFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
     Value: !GetAtt NBAGenerateFunctionRole.Arn
+
+  NBATriggerApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  NBATriggerFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt NBATriggerFunction.Arn
+  NBATriggerFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt NBATriggerFunctionRole.Arn
 
