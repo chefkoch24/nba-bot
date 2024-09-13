@@ -6,7 +6,12 @@ import time
 from argparse import ArgumentTypeError
 
 import boto3
+from dotenv import load_dotenv
 from selenium.common import NoSuchElementException, StaleElementReferenceException
+
+load_dotenv()
+
+AWS_PROFILE = os.getenv('AWS_PROFILE')
 
 
 def open_json(file_path):
@@ -129,10 +134,11 @@ def write_json_to_s3(json_content, bucket_name, key):
     Returns:
     - None
     """
-    s3 = boto3.client('s3')
+    session = boto3.Session(profile_name=AWS_PROFILE)
+    s3 = session.resource("s3")
     # Convert Python dictionary to JSON string
     json_data = json.dumps(json_content, indent=2)
-    s3.put_object(Body=json_data, Bucket=bucket_name, Key=key)
+    s3.Bucket(bucket_name).put_object(Body=json_data, Key=key)
 
 
 
@@ -147,25 +153,24 @@ def read_json_from_s3(bucket_name, folder_path):
     Returns:
     - List of dictionaries containing JSON content from each file.
     """
-    s3 = boto3.client('s3')
+    session = boto3.Session(profile_name=AWS_PROFILE)
+    s3 = session.resource("s3")
 
     # List all objects in the specified folder
     try:
-        response = s3.list_objects(Bucket=bucket_name, Prefix=folder_path)
+        response = []
+        for o in s3.Bucket(bucket_name).objects.filter(Prefix=folder_path):
+            obj_body = o.get()['Body'].read().decode('utf-8')
+            # Parse the JSON content
+            try:
+                json_content = json.loads(obj_body)
+                response.append(json_content)
+            except Exception as e:
+                print(f"Error reading JSON from {o['Key']}: {e}")
+        return response
     except Exception as e:
         print(f"Error listing objects in S3: {e}")
         return []
-
-    # Read JSON content from each file
-    json_contents = []
-    for obj in response.get('Contents', []):
-        try:
-            file_content = s3.get_object(Bucket=bucket_name, Key=obj['Key'])['Body'].read().decode('utf-8')
-            json_contents.append(json.loads(file_content))
-        except Exception as e:
-            print(f"Error reading JSON from {obj['Key']}: {e}")
-
-    return json_contents
 
 
 def create_email_content(date):

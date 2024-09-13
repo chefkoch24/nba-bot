@@ -9,9 +9,13 @@ from selenium.common import TimeoutException, NoSuchElementException
 import nba_api.live.nba.endpoints as nba
 # Set up Chrome options for headless mode
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from webdriver_manager.firefox import GeckoDriverManager
 from tqdm import tqdm
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
+
 from utils import get_scrape_date, get_game_id, find_elements_with_retry, find_element_with_retry, save_json, \
     write_json_to_s3, str2bool
 
@@ -19,6 +23,7 @@ load_dotenv()
 
 IS_SERVER = False  #str2bool(os.getenv('IS_SERVER'))
 BUCKET_NAME = os.getenv("BUCKET_NAME")
+BINARY_LOCATION = os.getenv("BINARY_LOCATION")
 
 class Extractor(abc.ABC):
 
@@ -29,14 +34,11 @@ class Extractor(abc.ABC):
         }
         self.chrome_options = webdriver.ChromeOptions()
         # Set up Selenium with Chrome WebDriver and headless mode
-        self.chrome_options.binary_location = "/opt/chrome/chrome"
         self.chrome_options.add_argument("--headless")
         self.chrome_options.add_argument("--no-sandbox")
+        self.chrome_options.add_argument("--disable-extensions")
         self.chrome_options.add_argument("--disable-dev-shm-usage")
         self.chrome_options.add_argument("--disable-gpu")
-        self.chrome_options.add_argument("--disable-dev-tools")
-        self.chrome_options.add_argument("--no-zygote")
-        self.chrome_options.add_argument("--single-process")
         self.chrome_options.add_argument("window-size=2560x1440")
         self.chrome_options.add_argument("--remote-debugging-port=9222")
 
@@ -50,7 +52,13 @@ class Extractor(abc.ABC):
                                            options=self.chrome_options)
             #driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=self.chrome_options)
         else:
-            self.driver = webdriver.Chrome(options=self.chrome_options)
+            if BINARY_LOCATION is not None:
+                self.chrome_options.binary_location = BINARY_LOCATION
+                self.driver = webdriver.Chrome(options=self.chrome_options)
+            else:
+                service = ChromeService(executable_path=ChromeDriverManager().install())
+                service.command_line_args().append('--verbose')
+                self.driver = webdriver.Chrome(service=service, options=self.chrome_options)
         try:
             # Find elements based on their class names
             self.extract_on_website(date, scrape_date)
@@ -113,6 +121,8 @@ class NBAExtractor(Extractor):
 
 
 class NFLExtractor(Extractor):
+    def __init__(self, base_url: str):
+        super().__init__(base_url)
     def extract_on_website(self, date, scrape_date):
         self.driver.get(self.base_url)
         time.sleep(3)
@@ -148,7 +158,7 @@ class NFLExtractor(Extractor):
                             story = find_element_with_retry(self.driver, By.CSS_SELECTOR,
                                                             '[class^="Story__Wrapper"]').get_attribute("innerText")
                             if story:
-                                game_recap = story.text
+                                game_recap = story
                             elif home_score == 0 and away_score == 0:
                                 game_recap = 'Game postponed'
                             else:

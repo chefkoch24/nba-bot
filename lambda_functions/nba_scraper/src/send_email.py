@@ -6,6 +6,7 @@ from botocore.exceptions import ClientError
 load_dotenv()
 
 BUCKET_NAME = os.getenv('BUCKET_NAME')
+AWS_PROFILE = os.getenv('AWS_PROFILE')
 
 class Email:
     def send_email(self, subject, to_email, date):
@@ -28,7 +29,10 @@ class Email:
         # The character encoding for the email.
         CHARSET = "UTF-8"
         # Create a new SES resource and specify a region.
-        client = boto3.client('ses', region_name=AWS_REGION)
+
+        session = boto3.Session(profile_name=AWS_PROFILE)
+
+        client = session.client('ses', region_name=AWS_REGION)
         # Try to send the email.
         try:
             # Provide the contents of the email.

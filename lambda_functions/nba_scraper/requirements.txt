@@ -1,6 +1,6 @@
 botocore~=1.34.20
 pelican~=4.9.1
-selenium~=4.18.1
+selenium~=4.24.0
 nba_api~=1.4.1
 beautifulsoup4~=4.12.2
 bs4~=0.0.1

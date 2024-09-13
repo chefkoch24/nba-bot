@@ -13,6 +13,8 @@ class Generator:
     def generate(self, date):
         title = date.strftime("%d.%m.%Y")
         scrape_date = get_scrape_date(date - datetime.timedelta(days=1))
+        filenames = []
+      #  self.git_clone_repo()
         for league in ['nba', 'nfl']:
             directory_path = f'{league}/generated_data/{scrape_date}'
             body = ""
@@ -32,15 +34,14 @@ class Generator:
             content += f"Category: {league.upper()} \n"
             content += f"Slug: {league}-{date.strftime('%Y-%m-%d')} \n"
             content += body
+            if body != '':
+                filename = f"/tmp/nba-bot/website/content/articles/{league}-{date.strftime('%Y-%m-%d')}.md"
+                filenames.append(filename)
+                with open(filename, "w") as markdown_file:
+                    markdown_file.write(content)
+        self.git_commit_push(filenames)
 
-        self.git_clone_repo()
 
-        if body != '':
-            filename = f"/tmp/nba-bot/website/content/articles/nba-{date.strftime('%Y-%m-%d')}.md"
-            with open(filename, "w") as markdown_file:
-                markdown_file.write(content)
-
-            self.git_commit_push(filename)
 
     def git_clone_repo(self):
         try:
@@ -48,10 +49,10 @@ class Generator:
         except Exception as e:
             print(f"Error: {e}")
 
-    def git_commit_push(self, filename):
+    def git_commit_push(self, filenames: []):
         try:
             # Add the file to the index
-            self.repo.index.add([filename])
+            self.repo.index.add(filenames)
 
             # Commit the changes
             self.repo.index.commit(f"Added article: {datetime.datetime.today()}")
