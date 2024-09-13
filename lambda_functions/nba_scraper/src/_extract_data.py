@@ -18,8 +18,8 @@ IS_SERVER = str2bool(os.getenv('IS_SERVER'))
 
 class Extract:
 
-    def __init__(self):
-        self.base_url = 'https://www.nba.com/games?date='
+    def __init__(self, base_url:str = 'https://www.nba.com/games?date='):
+        self.base_url = base_url
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }

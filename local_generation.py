@@ -5,8 +5,8 @@ from lambda_functions.nba_scraper.src.utils import get_scrape_date, read_json_fr
 def generate_local(date):
     title = date.strftime("%d.%m.%Y")
     scrape_date = get_scrape_date(date - datetime.timedelta(days=1))
-    directory_path = f'generated_data/{scrape_date}'
-    data = read_json_from_s3(bucket_name='nba-scraper', folder_path=directory_path)
+    directory_path = f'nba/generated_data/{scrape_date}'
+    data = read_json_from_s3(bucket_name='lastnightscores', folder_path=directory_path)
     body = ""
     for d in data:
         headline = f"**{d['home_team']} {d['home_score']} - {d['away_score']} {d['away_team']}**  \n"

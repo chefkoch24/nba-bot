@@ -1,12 +1,14 @@
 import json
 import datetime
-from extract_data import Extract
+from lambda_functions.nba_scraper.src.extractor import NBAExtractor, NFLExtractor
 
 
 def lambda_handler(event, context):
     scrape_date = datetime.datetime.now() - datetime.timedelta(days=1)
-    extractor = Extract()
-    extractor.extract(scrape_date)
+    nba_extractor = NBAExtractor()
+    nfl_extractor = NFLExtractor()
+    nba_extractor.extract(scrape_date)
+    nfl_extractor.extract(scrape_date)
     return {
         "statusCode": 200,
         "body": json.dumps(
