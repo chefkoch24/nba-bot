@@ -5,7 +5,7 @@ import typing
 from datetime import datetime
 
 from dotenv import load_dotenv
-from selenium.common import TimeoutException, NoSuchElementException
+from selenium.common import TimeoutException, NoSuchElementException, StaleElementReferenceException
 import nba_api.live.nba.endpoints as nba
 # Set up Chrome options for headless mode
 from selenium.webdriver.common.by import By
@@ -179,6 +179,10 @@ class NFLExtractor(Extractor):
                         except Exception as e:
                             print(e)
                             self.driver.refresh()
-                    self.driver.quit()
         except NoSuchElementException:
-            print("No GameCard elements found")  # Handle case where GameCard elements are not found
+            print("No GameCard elements found")
+            # Handle case where GameCard elements are not found
+        except StaleElementReferenceException:
+            print("StaleElementReferenceException occurred, retrying...")
+        except Exception as e:
+            print(e)

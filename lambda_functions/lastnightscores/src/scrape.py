@@ -1,12 +1,14 @@
 import json
 import datetime
-from lambda_functions.nba_scraper.src.extractor import NBAExtractor, NFLExtractor
+from lambda_functions.lastnightscores.src.extractor import NBAExtractor, NFLExtractor
+from lambda_functions.lastnightscores.src.utils import get_nfl_meta_data
 
 
 def lambda_handler(event, context):
     scrape_date = datetime.datetime.now() - datetime.timedelta(days=1)
     nba_extractor = NBAExtractor()
-    nfl_extractor = NFLExtractor()
+    season, number_of_week = get_nfl_meta_data(scrape_date)
+    nfl_extractor = NFLExtractor(base_url=f"https://www.espn.com/nfl/scoreboard/_/week/{str(number_of_week)}/year/{str(season)}/seasontype/2")
     nba_extractor.extract(scrape_date)
     nfl_extractor.extract(scrape_date)
     return {

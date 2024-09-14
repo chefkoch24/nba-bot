@@ -196,3 +196,13 @@ def str2bool(val: str):
         return False
     else:
         raise ArgumentTypeError('Expected boolean value.')
+
+def get_nfl_meta_data(date: datetime.datetime.date) -> (int, int):
+    season = 2024
+    start_date = datetime.datetime(year=season, month=9, day=6)
+    week_end = start_date + datetime.timedelta(days=7)
+    week = 1
+    while date >= start_date and date > week_end:
+        week += 1
+        week_end = week_end + datetime.timedelta(days=7)
+    return season, week

@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   python3.10
 
-  Sample SAM Template for nba-scraper
+  Sample SAM Template for lastnightscores
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -15,8 +15,8 @@ Resources:
   MyS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: nba-scraper
-  NBATriggerFunction:
+      BucketName: lastnightscores
+  TriggerFunction:
     Type: AWS::Serverless::Function
     Properties:
       PackageType: Zip
@@ -25,12 +25,12 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        NBATriggerAPI:
+        TriggerAPI:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /nba-trigger
+            Path: /lastnightscores-trigger
             Method: get
-  NBAScrapeFunction:
+  ScrapeFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       PackageType: Image
@@ -43,17 +43,17 @@ Resources:
         Variables:
           IS_SERVER: True
       Events:
-        NBAScrapeAPI:
+        ScrapeAPI:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /nba-scrape
+            Path: /lastnightscores-scrape
             Method: get
     Metadata:
       Dockerfile: Dockerfile
       DockerContext: ./src
       DockerTag: python3.10-v1
 
-  NBAGenerateFunction:
+  GenerateFunction:
     Type: AWS::Serverless::Function
     Properties:
       PackageType: Image
@@ -66,27 +66,17 @@ Resources:
         Variables:
           API_KEY: ${API_KEY}
       Events:
-        #S3Event:
-        #  Type: S3
-        #  Properties:
-        #    Bucket: !Ref MyS3Bucket
-        #    Events: s3:ObjectCreated:*
-        #    Filter:
-        #      S3Key:
-        #        Rules:
-        #          - Name: prefix
-        #            Value: extracted_data/
-        NBAGenerateApi:
+        GenerateApi:
           Type: Api
           Properties:
-            Path: /nba-generate
+            Path: /lastnightscores-generate
             Method: get
     Metadata:
       Dockerfile: Dockerfile
       DockerContext: ./src
       DockerTag: python3.10-v1
 
-  NBAPublishFunction:
+  PublishFunction:
     Type: AWS::Serverless::Function
     Properties:
       PackageType: Image
@@ -104,20 +94,10 @@ Resources:
           GITHUB_USERNAME: ${GITHUB_USERNAME}
           GITHUB_TOKEN: ${GITHUB_TOKEN}
       Events:
-        #S3Event:
-        #  Type: S3
-        #  Properties:
-        #    Bucket: !Ref MyS3Bucket
-        #    Events: s3:ObjectCreated:*
-        #    Filter:
-        #      S3Key:
-        #        Rules:
-        #          - Name: prefix
-        #            Value: generated_data/
-        NBAPublishApi:
+        PublishApi:
           Type: Api
           Properties:
-            Path: /nba-publish
+            Path: /lastnightscores-publish
             Method: get
     Metadata:
       Dockerfile: Dockerfile
@@ -128,42 +108,42 @@ Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  NBAScrapeApi:
+  ScrapeApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  NBAScrapeFunction:
+  ScrapeFunction:
     Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt NBAScrapeFunction.Arn
-  NBAScrapeFunctionIamRole:
+    Value: !GetAtt ScrapeFunction.Arn
+  ScrapeFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt NBAScrapeFunctionRole.Arn
-  NBAGenerateApi:
+    Value: !GetAtt ScrapeFunctionRole.Arn
+  GenerateApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  NBAGenerateFunction:
+  GenerateFunction:
     Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt NBAGenerateFunction.Arn
-  NBAGenerateFunctionIamRole:
+    Value: !GetAtt GenerateFunction.Arn
+  GenerateFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt NBAGenerateFunctionRole.Arn
+    Value: !GetAtt GenerateFunctionRole.Arn
 
-  NBAPublishApi:
+  PublishApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  NBAPublishFunction:
+  PublishFunction:
     Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt NBAGenerateFunction.Arn
-  NBAPublishFunctionIamRole:
+    Value: !GetAtt GenerateFunction.Arn
+  PublishFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt NBAGenerateFunctionRole.Arn
+    Value: !GetAtt GenerateFunctionRole.Arn
 
-  NBATriggerApi:
+  TriggerAPI:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  NBATriggerFunction:
+  TriggerFunction:
     Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt NBATriggerFunction.Arn
-  NBATriggerFunctionIamRole:
+    Value: !GetAtt TriggerFunction.Arn
+  TriggerFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt NBATriggerFunctionRole.Arn
+    Value: !GetAtt TriggerFunctionRole.Arn
 

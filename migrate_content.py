@@ -1,7 +1,7 @@
 import datetime
 import os
 from dotenv import load_dotenv
-from lambda_functions.nba_scraper.src import _extract_data, rag, utils, generator
+from lambda_functions.lastnightscores.src import _extract_data, rag, utils, generator
 
 
 

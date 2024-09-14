@@ -1,5 +1,5 @@
 import datetime
-from lambda_functions.nba_scraper.src.utils import get_scrape_date, read_json_from_s3
+from lambda_functions.lastnightscores.src.utils import get_scrape_date, read_json_from_s3
 
 
 def generate_local(date):
@@ -30,5 +30,5 @@ def generate_local(date):
 
 
 # Insert the day you want to generate the blogpost for
-date = datetime.datetime(2024, 9, 8)
+date = datetime.datetime(2024, 9, 9)
 generate_local(date)
