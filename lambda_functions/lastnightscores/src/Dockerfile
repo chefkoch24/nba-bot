@@ -4,7 +4,7 @@ COPY requirements.txt ./
 
 COPY scrape.py ./
 
-COPY extract_data.py ./
+COPY extractor.py ./
 
 COPY utils.py ./
 

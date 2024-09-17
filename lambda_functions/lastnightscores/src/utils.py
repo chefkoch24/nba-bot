@@ -86,16 +86,16 @@ def find_element_with_retry(driver, by, value, max_retries=100, retry_interval=2
                 element = driver.find_element(by=by, value=value)
                 return element
             except StaleElementReferenceException:
-                print("Stale element encountered. Retrying...")
+                print(f"Stale element encountered {by}, {value}. Retrying...")
             except NoSuchElementException:
-                print("No such element. Retrying...")
+                print(f"No such element {by}, {value}. Retrying...")
             retries += 1
             if retries % refresh_threshold == 0:
                 print(f"Refreshing page (attempt {refresh_count + 1})...")
                 driver.refresh()
                 refresh_count += 1
                 time.sleep(retry_interval)  # Add a wait after refreshing the page
-        return None
+        raise NoSuchElementException(f"No such element {by}, {value}.")
 
 def find_elements_with_retry(driver, by, value, max_retries=100, retry_interval=2, refresh_threshold=5):
         """
@@ -114,14 +114,16 @@ def find_elements_with_retry(driver, by, value, max_retries=100, retry_interval=
                 element = driver.find_elements(by=by, value=value)
                 return element
             except StaleElementReferenceException:
-                print("Stale element encountered. Retrying...")
+                print(f"Stale element encountered {by}, {value}. Retrying...")
+            except NoSuchElementException:
+                print(f"No such element {by}, {value}. Retrying...")
             retries += 1
             if retries % refresh_threshold == 0:
                 print(f"Refreshing page (attempt {refresh_count + 1})...")
                 driver.refresh()
                 refresh_count += 1
                 time.sleep(retry_interval)  # Add a wait after refreshing the page
-        return None
+        raise NoSuchElementException(f"No such element {by}, {value}.")
 
 def write_json_to_s3(json_content, bucket_name, key):
     """

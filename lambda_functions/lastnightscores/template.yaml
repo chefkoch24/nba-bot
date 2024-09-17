@@ -10,12 +10,11 @@ Globals:
   Function:
     Timeout: 900
     MemorySize: 10240
-
 Resources:
-  MyS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: lastnightscores
+  #MyS3Bucket:
+   # Type: AWS::S3::Bucket
+    #Properties:
+     # BucketName: lastnightscores-bucket
   TriggerFunction:
     Type: AWS::Serverless::Function
     Properties:

@@ -3,14 +3,11 @@ import os
 import time
 import typing
 from datetime import datetime
-
-from dotenv import load_dotenv
 from selenium.common import TimeoutException, NoSuchElementException, StaleElementReferenceException
 import nba_api.live.nba.endpoints as nba
-# Set up Chrome options for headless mode
 from selenium.webdriver.common.by import By
 from dotenv import load_dotenv
-from selenium.webdriver import Remote, ChromeOptions as Options, ActionChains
+from selenium.webdriver import Remote, ChromeOptions as Options
 from selenium.webdriver.chromium.remote_connection import ChromiumRemoteConnection as Connection
 from selenium.webdriver.support.wait import WebDriverWait
 from tqdm import tqdm
@@ -18,9 +15,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
-
-from utils import get_scrape_date, get_game_id, find_elements_with_retry, find_element_with_retry, save_json, \
-    write_json_to_s3, str2bool
+from utils import get_scrape_date, get_game_id, find_elements_with_retry, find_element_with_retry, write_json_to_s3, str2bool
 
 load_dotenv()
 
@@ -51,19 +46,20 @@ class Extractor(abc.ABC):
         else:
             self.chrome_options = webdriver.ChromeOptions()
             # Set up Selenium with Chrome WebDriver and headless mode
-            #self.chrome_options.add_argument("--headless")
+            self.chrome_options.add_argument("--headless")
             self.chrome_options.add_argument("--no-sandbox")
             self.chrome_options.add_argument("--disable-extensions")
             self.chrome_options.add_argument("--disable-dev-shm-usage")
             self.chrome_options.add_argument("--disable-gpu")
             self.chrome_options.add_argument("window-size=2560x1440")
-            self.chrome_options.add_argument("--autoplay-policy=no-user-gesture-required")
+            #self.chrome_options.add_argument("--autoplay-policy=no-user-gesture-required")
             self.chrome_options.add_argument("--remote-debugging-port=9222")
 
             if BINARY_LOCATION is not None:
                 self.chrome_options.binary_location = BINARY_LOCATION
                 self.driver = webdriver.Chrome(options=self.chrome_options)
             else:
+                self.chrome_options.add_argument("--disable-extensions")
                 service = ChromeService(executable_path=ChromeDriverManager().install())
                 service.command_line_args().append('--verbose')
                 self.driver = webdriver.Chrome(service=service, options=self.chrome_options)
@@ -87,13 +83,14 @@ class NBAExtractor(Extractor):
         except NoSuchElementException:
             pass  # Continue if the close button is not found
         try:
-            time.sleep(2)
+            time.sleep(3)
             elements = find_elements_with_retry(self.driver, By.CSS_SELECTOR, '[class^="GameCard"]')
             game_links = [e.get_attribute('href') for e in elements if e.get_attribute('href') is not None]
             game_ids = [get_game_id(g) for g in game_links]
             game_stories = []
             for game_id in tqdm(game_ids):
-                element = find_elements_with_retry(self.driver, By.XPATH, f'// *[ @ data-content-id = "{game_id}"]')[1]
+                time.sleep(3)
+                element = find_elements_with_retry(self.driver, By.XPATH, f'//*[@data-content-id="{game_id}"]')[1]
                 element.click()
                 time.sleep(3)
                 try:
@@ -104,11 +101,11 @@ class NBAExtractor(Extractor):
                     else:
                         game_stories.append(
                             "Game postponed")  # Handle case where game story element is not found after retry
+                    self.driver.back()
                 except NoSuchElementException:
                     game_stories.append("No game story found")  # Handle case where game story element is not found
-
-                self.driver.back()
-
+                    self.driver.back()
+            self.driver.quit()
             for game_id, game_story, game_link in tqdm(zip(game_ids, game_stories, game_links)):
                 box_score = nba.BoxScore(game_id=game_id).get_dict()
                 box_score = box_score['game']
@@ -132,7 +129,6 @@ class NBAExtractor(Extractor):
                            'box_score_url': f"{game_link}/box-score",
                            'game_cast_url': game_link
                            }
-                self.driver.quit()
                 write_json_to_s3(json_content=content, bucket_name=BUCKET_NAME, key=file_path)
         except NoSuchElementException:
             print("No GameCard elements found")  # Handle case where GameCard elements are not found
@@ -203,7 +199,7 @@ class NFLExtractor(Extractor):
                             elif home_score == 0 and away_score == 0:
                                 game_recap = 'Game postponed'
                             else:
-                                game_recap = 'Game postponed'
+                                game_recap = 'No game story found'
                             folder_path = f"nfl/extracted_data/{scrape_date}"
                             file_path = f'{folder_path}/{game_id}.json'
                             content = {'date': f"{date.day}.{date.month}.{date.year}",
@@ -222,7 +218,7 @@ class NFLExtractor(Extractor):
                             self.driver.back()
                         except Exception as e:
                             print(e)
-                            self.driver.refresh()
+                            self.driver.back()
         except NoSuchElementException as e:
             print("No GameCard elements found")
             # Handle case where GameCard elements are not found
