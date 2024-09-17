@@ -6,14 +6,13 @@ from lambda_functions.lastnightscores.src.generator import Generator
 from lambda_functions.lastnightscores.src.rag import RAG
 from lambda_functions.lastnightscores.src.send_email import Email
 from lambda_functions.lastnightscores.src.utils import get_nfl_meta_data
-
 nba_extractor = NBAExtractor(base_url="https://www.nba.com/games?date=")
-#scrape_date = datetime.datetime.now() - datetime.timedelta(days=1)
-scrape_date = datetime(year=2024, month=9, day=6)
-#nba_extractor.extract(scrape_date)
-season, number_of_week = get_nfl_meta_data(scrape_date)
-nfl_extractor = NFLExtractor(base_url=f"https://www.espn.com/nfl/scoreboard/_/week/{str(number_of_week)}/year/{str(season)}/seasontype/2")
-nfl_extractor.extract(scrape_date)
+scrape_date = datetime(year=2024, month=9, day=17)
+#scrape_date = datetime(year=2024, month=9, day=15)
+nba_extractor.extract(scrape_date)
+#season, number_of_week = get_nfl_meta_data(scrape_date)
+#nfl_extractor = NFLExtractor(base_url=f"https://www.espn.com/nfl/scoreboard/_/week/{str(number_of_week)}/year/{str(season)}/seasontype/2")
+#nfl_extractor.extract(scrape_date)
 
 #rag = RAG()
 #rag.generate(scrape_date)

@@ -54,8 +54,7 @@ def get_game_id(url: str):
     # Extract digits using regular expression
     digits = re.findall(r'\d+', url)
     # Convert list of strings to integers
-    digits = [str(d) for d in digits]
-    return ''.join(digits)
+    return digits[0]
 
 
 def get_scrape_date(date: datetime.datetime) -> str:
@@ -88,6 +87,8 @@ def find_element_with_retry(driver, by, value, max_retries=100, retry_interval=2
                 return element
             except StaleElementReferenceException:
                 print("Stale element encountered. Retrying...")
+            except NoSuchElementException:
+                print("No such element. Retrying...")
             retries += 1
             if retries % refresh_threshold == 0:
                 print(f"Refreshing page (attempt {refresh_count + 1})...")
