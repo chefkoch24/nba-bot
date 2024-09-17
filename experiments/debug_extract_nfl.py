@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, timedelta
 
-from extractor import NFLExtractor, NBAExtractor
+from lambda_functions.lastnightscores.src.extractor import NFLExtractor, NBAExtractor
 from lambda_functions.lastnightscores.src.generator import Generator
 from lambda_functions.lastnightscores.src.rag import RAG
 from lambda_functions.lastnightscores.src.send_email import Email
