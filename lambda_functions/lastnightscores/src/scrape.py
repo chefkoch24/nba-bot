@@ -1,7 +1,7 @@
 import json
 import datetime
-from lambda_functions.lastnightscores.src.extractor import NBAExtractor, NFLExtractor
-from lambda_functions.lastnightscores.src.utils import get_nfl_meta_data
+from extractor import NBAExtractor, NFLExtractor
+from utils import get_nfl_meta_data
 
 
 def lambda_handler(event, context):

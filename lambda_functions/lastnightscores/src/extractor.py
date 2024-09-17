@@ -7,10 +7,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from selenium.common import TimeoutException, NoSuchElementException, StaleElementReferenceException
 import nba_api.live.nba.endpoints as nba
-# Set up Chrome options for headless mode
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from webdriver_manager.firefox import GeckoDriverManager
 from tqdm import tqdm
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -21,7 +18,7 @@ from utils import get_scrape_date, get_game_id, find_elements_with_retry, find_e
 
 load_dotenv()
 
-IS_SERVER = False  #str2bool(os.getenv('IS_SERVER'))
+IS_SERVER = str2bool(os.getenv('IS_SERVER'))
 BUCKET_NAME = os.getenv("BUCKET_NAME")
 BINARY_LOCATION = os.getenv("BINARY_LOCATION")
 
@@ -36,7 +33,6 @@ class Extractor(abc.ABC):
         # Set up Selenium with Chrome WebDriver and headless mode
         self.chrome_options.add_argument("--headless")
         self.chrome_options.add_argument("--no-sandbox")
-        self.chrome_options.add_argument("--disable-extensions")
         self.chrome_options.add_argument("--disable-dev-shm-usage")
         self.chrome_options.add_argument("--disable-gpu")
         self.chrome_options.add_argument("window-size=2560x1440")
@@ -48,6 +44,9 @@ class Extractor(abc.ABC):
     def extract(self, date):
         scrape_date = get_scrape_date(date)
         if IS_SERVER:
+            self.chrome_options.add_argument("--no-zygote")
+            self.chrome_options.add_argument("--single-process")
+            self.chrome_options.add_argument("--disable-dev-tools")
             self.driver = webdriver.Chrome(service=ChromeService(executable_path="/opt/chromedriver"),
                                            options=self.chrome_options)
             #driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=self.chrome_options)
@@ -56,6 +55,7 @@ class Extractor(abc.ABC):
                 self.chrome_options.binary_location = BINARY_LOCATION
                 self.driver = webdriver.Chrome(options=self.chrome_options)
             else:
+                self.chrome_options.add_argument("--disable-extensions")
                 service = ChromeService(executable_path=ChromeDriverManager().install())
                 service.command_line_args().append('--verbose')
                 self.driver = webdriver.Chrome(service=service, options=self.chrome_options)

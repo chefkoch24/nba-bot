@@ -20,7 +20,7 @@ resolve_s3 = true
 resolve_image_repos = true
 s3_prefix = "lastnightscores"
 region = "eu-central-1"
-stack_name = "lastnightscores"
+disable_rollback = true
 
 [default.package.parameters]
 resolve_s3 = true
