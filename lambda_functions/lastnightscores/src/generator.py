@@ -14,7 +14,7 @@ class Generator:
         title = date.strftime("%d.%m.%Y")
         scrape_date = get_scrape_date(date - datetime.timedelta(days=1))
         filenames = []
-      #  self.git_clone_repo()
+        self.git_clone_repo()
         for league in ['nba', 'nfl']:
             directory_path = f'{league}/generated_data/{scrape_date}'
             body = ""
@@ -59,7 +59,7 @@ class Generator:
 
             # Push the changes to the remote repository
             origin = self.repo.remote(name='origin')
-            #origin.push(refspec='master:master')
+            origin.push(refspec='master:master')
             origin.push()
         except Exception as e:
             print(f"Error: {e}")
