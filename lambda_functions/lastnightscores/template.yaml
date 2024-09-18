@@ -40,7 +40,10 @@ Resources:
         - x86_64
       Environment:
         Variables:
-          IS_SERVER: True
+          IS_SERVER: ${IS_SERVER}
+          BINARY_LOCATION: ${BINARY_LOCATION}
+          AUTH: ${AUTH}
+          BUCKET_NAME: ${BUCKET_NAME}
       Events:
         ScrapeAPI:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -64,6 +67,7 @@ Resources:
       Environment:
         Variables:
           API_KEY: ${API_KEY}
+          BUCKET_NAME: ${BUCKET_NAME}
       Events:
         GenerateApi:
           Type: Api
@@ -92,6 +96,7 @@ Resources:
           SITENAME: ${SITENAME}
           GITHUB_USERNAME: ${GITHUB_USERNAME}
           GITHUB_TOKEN: ${GITHUB_TOKEN}
+          BUCKET_NAME: ${BUCKET_NAME}
       Events:
         PublishApi:
           Type: Api
