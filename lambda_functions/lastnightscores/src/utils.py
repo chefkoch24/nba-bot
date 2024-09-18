@@ -6,7 +6,12 @@ import time
 from argparse import ArgumentTypeError
 
 import boto3
+from dotenv import load_dotenv
 from selenium.common import NoSuchElementException, StaleElementReferenceException
+
+load_dotenv()
+
+AWS_PROFILE = os.getenv('AWS_PROFILE')
 
 
 def open_json(file_path):
@@ -49,8 +54,7 @@ def get_game_id(url: str):
     # Extract digits using regular expression
     digits = re.findall(r'\d+', url)
     # Convert list of strings to integers
-    digits = [str(d) for d in digits]
-    return ''.join(digits)
+    return digits[0]
 
 
 def get_scrape_date(date: datetime.datetime) -> str:
@@ -82,14 +86,16 @@ def find_element_with_retry(driver, by, value, max_retries=100, retry_interval=2
                 element = driver.find_element(by=by, value=value)
                 return element
             except StaleElementReferenceException:
-                print("Stale element encountered. Retrying...")
+                print(f"Stale element encountered {by}, {value}. Retrying...")
+            except NoSuchElementException:
+                print(f"No such element {by}, {value}. Retrying...")
             retries += 1
             if retries % refresh_threshold == 0:
                 print(f"Refreshing page (attempt {refresh_count + 1})...")
                 driver.refresh()
                 refresh_count += 1
                 time.sleep(retry_interval)  # Add a wait after refreshing the page
-        return None
+        raise NoSuchElementException(f"No such element {by}, {value}.")
 
 def find_elements_with_retry(driver, by, value, max_retries=100, retry_interval=2, refresh_threshold=5):
         """
@@ -108,14 +114,16 @@ def find_elements_with_retry(driver, by, value, max_retries=100, retry_interval=
                 element = driver.find_elements(by=by, value=value)
                 return element
             except StaleElementReferenceException:
-                print("Stale element encountered. Retrying...")
+                print(f"Stale element encountered {by}, {value}. Retrying...")
+            except NoSuchElementException:
+                print(f"No such element {by}, {value}. Retrying...")
             retries += 1
             if retries % refresh_threshold == 0:
                 print(f"Refreshing page (attempt {refresh_count + 1})...")
                 driver.refresh()
                 refresh_count += 1
                 time.sleep(retry_interval)  # Add a wait after refreshing the page
-        return None
+        raise NoSuchElementException(f"No such element {by}, {value}.")
 
 def write_json_to_s3(json_content, bucket_name, key):
     """
@@ -129,10 +137,11 @@ def write_json_to_s3(json_content, bucket_name, key):
     Returns:
     - None
     """
-    s3 = boto3.client('s3')
+    session = boto3.Session(profile_name=AWS_PROFILE)
+    s3 = session.resource("s3")
     # Convert Python dictionary to JSON string
     json_data = json.dumps(json_content, indent=2)
-    s3.put_object(Body=json_data, Bucket=bucket_name, Key=key)
+    s3.Bucket(bucket_name).put_object(Body=json_data, Key=key)
 
 
 
@@ -147,25 +156,24 @@ def read_json_from_s3(bucket_name, folder_path):
     Returns:
     - List of dictionaries containing JSON content from each file.
     """
-    s3 = boto3.client('s3')
+    session = boto3.Session(profile_name=AWS_PROFILE)
+    s3 = session.resource("s3")
 
     # List all objects in the specified folder
     try:
-        response = s3.list_objects(Bucket=bucket_name, Prefix=folder_path)
+        response = []
+        for o in s3.Bucket(bucket_name).objects.filter(Prefix=folder_path):
+            obj_body = o.get()['Body'].read().decode('utf-8')
+            # Parse the JSON content
+            try:
+                json_content = json.loads(obj_body)
+                response.append(json_content)
+            except Exception as e:
+                print(f"Error reading JSON from {o['Key']}: {e}")
+        return response
     except Exception as e:
         print(f"Error listing objects in S3: {e}")
         return []
-
-    # Read JSON content from each file
-    json_contents = []
-    for obj in response.get('Contents', []):
-        try:
-            file_content = s3.get_object(Bucket=bucket_name, Key=obj['Key'])['Body'].read().decode('utf-8')
-            json_contents.append(json.loads(file_content))
-        except Exception as e:
-            print(f"Error reading JSON from {obj['Key']}: {e}")
-
-    return json_contents
 
 
 def create_email_content(date):
@@ -191,3 +199,13 @@ def str2bool(val: str):
         return False
     else:
         raise ArgumentTypeError('Expected boolean value.')
+
+def get_nfl_meta_data(date: datetime.datetime.date) -> (int, int):
+    season = 2024
+    start_date = datetime.datetime(year=season, month=9, day=6)
+    week_end = start_date + datetime.timedelta(days=7)
+    week = 1
+    while date >= start_date and date > week_end:
+        week += 1
+        week_end = week_end + datetime.timedelta(days=7)
+    return season, week
