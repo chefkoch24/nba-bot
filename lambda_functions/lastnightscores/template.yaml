@@ -11,101 +11,6 @@ Globals:
     Timeout: 900
     MemorySize: 10240
 Resources:
-  #MyS3Bucket:
-   # Type: AWS::S3::Bucket
-    #Properties:
-     # BucketName: lastnightscores-bucket
-  TriggerFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      PackageType: Zip
-      Handler: src.trigger.lambda_handler
-      Runtime: python3.10
-      Architectures:
-        - x86_64
-      Events:
-        TriggerAPI:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /lastnightscores-trigger
-            Method: get
-  ScrapeFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      PackageType: Image
-      ImageConfig:
-        Command:
-          - scrape.lambda_handler
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          IS_SERVER: ${IS_SERVER}
-          BINARY_LOCATION: ${BINARY_LOCATION}
-          BUCKET_NAME: ${BUCKET_NAME}
-      Events:
-        ScrapeAPI:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /lastnightscores-scrape
-            Method: get
-    Metadata:
-      Dockerfile: Dockerfile
-      DockerContext: ./src
-      DockerTag: python3.10-v1
-
-  GenerateFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      PackageType: Image
-      ImageConfig:
-        Command:
-          - generate.lambda_handler
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          API_KEY: ${API_KEY}
-          BUCKET_NAME: ${BUCKET_NAME}
-      Events:
-        GenerateApi:
-          Type: Api
-          Properties:
-            Path: /lastnightscores-generate
-            Method: get
-    Metadata:
-      Dockerfile: Dockerfile
-      DockerContext: ./src
-      DockerTag: python3.10-v1
-
-  PublishFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      PackageType: Image
-      ImageConfig:
-        Command:
-          - publish.lambda_handler
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          SENDER_EMAIL: ${SENDER_EMAIL}
-          SENDER_PASSWORD: ${SENDER_PASSWORD}
-          RECEIVE_EMAIL: ${RECEIVE_EMAIL}
-          SITENAME: ${SITENAME}
-          GITHUB_USERNAME: ${GITHUB_USERNAME}
-          GITHUB_TOKEN: ${GITHUB_TOKEN}
-          BUCKET_NAME: ${BUCKET_NAME}
-      Events:
-        PublishApi:
-          Type: Api
-          Properties:
-            Path: /lastnightscores-publish
-            Method: get
-    Metadata:
-      Dockerfile: Dockerfile
-      DockerContext: ./src
-      DockerTag: python3.10-v1
   DailyGenerateFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -142,48 +47,14 @@ Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  ScrapeApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  ScrapeFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt ScrapeFunction.Arn
-  ScrapeFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt ScrapeFunctionRole.Arn
-  GenerateApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  GenerateFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt GenerateFunction.Arn
-  GenerateFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt GenerateFunctionRole.Arn
   DailyGenerateFunction:
     Description: "Hello World Lambda Function ARN"
     Value: !GetAtt DailyGenerateFunction.Arn
-
-  PublishApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  PublishFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt GenerateFunction.Arn
-  PublishFunctionIamRole:
+  DailyGenerateFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt GenerateFunctionRole.Arn
+    Value: !GetAtt DailyGenerateFunctionRole.Arn
   DailyGenerateApi:
     Description: "Implicit IAM Role created for Daily Generate function"
     Value: !GetAtt DailyGenerateFunctionRole.Arn
 
-  TriggerAPI:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  TriggerFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt TriggerFunction.Arn
-  TriggerFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt TriggerFunctionRole.Arn
 

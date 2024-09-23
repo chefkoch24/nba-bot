@@ -5,17 +5,11 @@ RUN yum install -y git
 
 COPY requirements.txt ./
 
-COPY scrape.py ./
-
 COPY extractor.py ./
 
 COPY utils.py ./
 
-COPY generate.py ./
-
 COPY rag.py ./
-
-COPY publish.py ./
 
 COPY generator.py ./
 
