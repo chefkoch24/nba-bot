@@ -30,5 +30,5 @@ def generate_local(date):
 
 
 # Insert the day you want to generate the blogpost for
-date = datetime.datetime(2024, 9, 9)
+date = datetime.datetime(2024, 9, 1)
 generate_local(date)

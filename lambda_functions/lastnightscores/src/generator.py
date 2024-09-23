@@ -1,5 +1,6 @@
 import datetime
 import os
+import shutil
 
 from dotenv import load_dotenv
 from utils import get_all_data, get_scrape_date, read_json_from_s3
@@ -45,7 +46,13 @@ class Generator:
 
     def git_clone_repo(self):
         try:
-            self.repo = git.Repo.clone_from(url=f"https://{os.getenv('GITHUB_USERNAME')}:{os.getenv('GITHUB_TOKEN')}@github.com/chefkoch24/nba-bot", to_path="/tmp/nba-bot")
+            repo_path = "/tmp/nba-bot"
+            if os.path.exists(repo_path):
+                shutil.rmtree(repo_path)  # Remove the directory if it exists
+            self.repo = git.Repo.clone_from(
+                url=f"https://{os.getenv('GITHUB_USERNAME')}:{os.getenv('GITHUB_TOKEN')}@github.com/chefkoch24/nba-bot",
+                to_path=repo_path
+            )
         except Exception as e:
             print(f"Error: {e}")
 

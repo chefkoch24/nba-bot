@@ -42,7 +42,6 @@ Resources:
         Variables:
           IS_SERVER: ${IS_SERVER}
           BINARY_LOCATION: ${BINARY_LOCATION}
-          AUTH: ${AUTH}
           BUCKET_NAME: ${BUCKET_NAME}
       Events:
         ScrapeAPI:
@@ -107,6 +106,37 @@ Resources:
       Dockerfile: Dockerfile
       DockerContext: ./src
       DockerTag: python3.10-v1
+  DailyGenerateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command:
+          - daily_generate_function.lambda_handler
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          API_KEY: ${API_KEY}
+          BUCKET_NAME: ${BUCKET_NAME}
+          SENDER_EMAIL: ${SENDER_EMAIL}
+          SENDER_PASSWORD: ${SENDER_PASSWORD}
+          RECEIVE_EMAIL: ${RECEIVE_EMAIL}
+          SITENAME: ${SITENAME}
+          GITHUB_USERNAME: ${GITHUB_USERNAME}
+          GITHUB_TOKEN: ${GITHUB_TOKEN}
+          IS_SERVER: ${IS_SERVER}
+          BINARY_LOCATION: ${BINARY_LOCATION}
+      Events:
+        DailyGenerateApi:
+          Type: Api
+          Properties:
+            Path: /lastnightscores-daily-generate
+            Method: get
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./src
+      DockerTag: python3.10-v1
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
@@ -130,6 +160,9 @@ Outputs:
   GenerateFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
     Value: !GetAtt GenerateFunctionRole.Arn
+  DailyGenerateFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt DailyGenerateFunction.Arn
 
   PublishApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
@@ -140,6 +173,9 @@ Outputs:
   PublishFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
     Value: !GetAtt GenerateFunctionRole.Arn
+  DailyGenerateApi:
+    Description: "Implicit IAM Role created for Daily Generate function"
+    Value: !GetAtt DailyGenerateFunctionRole.Arn
 
   TriggerAPI:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
