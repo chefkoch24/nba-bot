@@ -92,7 +92,6 @@ class NBAExtractor(Extractor):
             print("No GameCard elements found")  # Handle case where GameCard elements are not found
 
 
-
 class NFLExtractor(Extractor):
     def __init__(self, base_url: str):
         super().__init__(base_url)
@@ -181,3 +180,111 @@ class NFLExtractor(Extractor):
         except Exception as e:
             print(e)
 
+
+class NHLExtractor(Extractor):
+    def __init__(self, base_url: str):
+        super().__init__(base_url)
+
+    def extract_on_website(self, date, scrape_date):
+        url = "https://api-web.nhle.com/v1/score/2023-12-31"
+        response = requests.get(url)
+        content = response.json()
+        games = content['games']
+        for game in tqdm(games):
+            away_abbrev = game['awayTeam']['abbrev']
+            home_abbrev = game['homeTeam']['abbrev']
+            away_team = self._get_team_name(away_abbrev)
+            away_team_url = away_team.lower().replace(" ", "-")
+            home_team = self._get_team_name(home_abbrev)
+            home_team_url = home_team.lower().replace(" ", "-")
+            month = self._get_month(int(scrape_date.split('-')[1]))
+            day = scrape_date.split('-')[2]
+
+            game_id = game['id']
+
+            home_score = int(game['homeTeam']['score'])
+            away_score = int(game['awayTeam']['score'])
+            try:
+                content_url = f"https://forge-dapi.d3.nhle.com/v2/content/en-us/stories/{away_team_url}-{home_team_url}-game-recap-{month}-{day}"
+
+                r = requests.get(content_url)
+                content = r.json()
+                text = [c['content'] for c in content['parts'] if c['type'] == 'markdown']
+                headline = content['headline']
+                story = headline + "\n " + " \n".join(text)
+            except Exception as e:
+                print(f"Failed to fetch story for {away_team} ({away_abbrev}) vs {home_team} ({home_abbrev}): {e}")
+                story = "No game story found"
+            folder_path = f"nhl/extracted_data/{scrape_date}"
+            file_path = f'{folder_path}/{game_id}.json'
+            data = {
+                "date": f"{date.day}.{date.month}.{date.year}",
+                "game_id": game_id,
+                "home_team": home_team,
+                "away_team": away_team,
+                "home_score": home_score,
+                "away_score": away_score,
+                "game_recap": story,
+                "box_score_url": game['gameCenterLink'],
+                "game_cast_url": f"https://www.nhl.com/news/{away_team_url}-{home_team_url}-game-recap-{month.lower()}-{day}" # game_center_links are 1-indexed
+            }
+            write_json_to_s3(json_content=data, bucket_name=BUCKET_NAME, key=file_path)
+
+
+
+
+
+    def _get_team_name(self, abbreviation: str) -> str:
+        # abbreviations of all nhl teams
+        teams = {
+            'ana': 'Anaheim Ducks',
+            'ari': 'Arizona Coyotes',
+            'bos': 'Boston Bruins',
+            'buf': 'Buffalo Sabres',
+            'cgy': 'Calgary Flames',
+            'car': 'Carolina Hurricanes',
+            'chi': 'Chicago Blackhawks',
+            'col': 'Colorado Avalanche',
+            'cbj': 'Columbus Blue Jackets',
+            'dal': 'Dallas Stars',
+            'det': 'Detroit Red Wings',
+            'edm': 'Edmonton Oilers',
+            'fla': 'Florida Panthers',
+            'lak': 'Los Angeles Kings',
+            'min': 'Minnesota Wild',
+            'mtl': 'Montreal Canadiens',
+            'nsh': 'Nashville Predators',
+            'njd': 'New Jersey Devils',
+            'nyi': 'New York Islanders',
+            'nyr': 'New York Rangers',
+            'ott': 'Ottawa Senators',
+            'phi': 'Philadelphia Flyers',
+            'pit': 'Pittsburgh Penguins',
+            'sjs': 'San Jose Sharks',
+            'sea': 'Seattle Kraken',
+            'stl': 'St Louis Blues',
+            'tbl': 'Tampa Bay Lightning',
+            'tor': 'Toronto Maple Leafs',
+            'van': 'Vancouver Canucks',
+            'vgk': 'Vegas Golden Knights',
+            'wsh': 'Washington Capitals',
+            'wpg': 'Winnipeg Jets'
+        }
+        return teams.get(abbreviation.lower(), "Invalid Team")
+
+    def _get_month(self, month: int) -> str:
+        months = {
+            1: 'January',
+            2: 'February',
+            3: 'March',
+            4: 'April',
+            5: 'May',
+            6: 'June',
+            7: 'July',
+            8: 'August',
+            9: 'September',
+            10: 'October',
+            11: 'November',
+            12: 'December'
+        }
+        return months.get(month, "Invalid month")
