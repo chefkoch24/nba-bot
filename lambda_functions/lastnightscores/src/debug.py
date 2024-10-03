@@ -8,7 +8,7 @@ from lambda_functions.lastnightscores.src.rag import RAG
 from lambda_functions.lastnightscores.src.send_email import Email
 from lambda_functions.lastnightscores.src.utils import get_nfl_meta_data
 
-scrape_date = datetime.datetime(2024, 10, 1)
+scrape_date = datetime.datetime(2024, 10, 3)
 #scrape_date = datetime.datetime.today() - datetime.timedelta(days=1)
 scrape_date = scrape_date.replace(hour=0, minute=0, second=0, microsecond=0)
 
