@@ -13,7 +13,7 @@ class RAG:
 
     def generate(self, date):
         scrape_date = get_scrape_date(date)
-        for league in ['nba', 'nfl']:
+        for league in ['nba', 'nfl', 'nhl']:
             data = read_json_from_s3(bucket_name=BUCKET_NAME, folder_path=f'{league}/extracted_data/{scrape_date}' )#get_all_data(f'extracted_data/{scrape_date}')#
             for d in data:
                 if d['home_score'] != 0 and d['away_score'] != 0:

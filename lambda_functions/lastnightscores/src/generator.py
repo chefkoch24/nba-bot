@@ -16,7 +16,7 @@ class Generator:
         scrape_date = get_scrape_date(date - datetime.timedelta(days=1))
         filenames = []
         self.git_clone_repo()
-        for league in ['nba', 'nfl']:
+        for league in ['nba', 'nfl', 'nhl']:
             directory_path = f'{league}/generated_data/{scrape_date}'
             body = ""
             data = read_json_from_s3(bucket_name=BUCKET_NAME, folder_path=directory_path)

@@ -3,7 +3,7 @@ import json
 import os
 import time
 import typing
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
 from selenium.common import TimeoutException, NoSuchElementException, StaleElementReferenceException
@@ -22,7 +22,7 @@ AUTH = os.getenv('AUTH', default='USER:PASS')
 
 class Extractor(abc.ABC):
 
-    def __init__(self, base_url: str = 'https://www.nba.com/games?date='):
+    def __init__(self, base_url: str):
         self.base_url = base_url
 
     def extract_on_website(self, date, scrape_date) -> (typing.Dict, str):
@@ -38,23 +38,29 @@ class Extractor(abc.ABC):
 
 
 class NBAExtractor(Extractor):
+
+    def __init__(self, base_url: str):
+        super().__init__(base_url)
+
     def extract_on_website(self, date, scrape_date):
         response = requests.get(self.base_url + scrape_date)
         soup = BeautifulSoup(response.content, 'html.parser')
         time.sleep(3)
         try:
-            elements = soup.select('[class^="GameCard"]')
-            game_links = [e.get('href') for e in elements if e.get('href') is not None]
+            script_tag = soup.find('script', id='__NEXT_DATA__')
+            json_data = json.loads(script_tag.get_text())
+            modules = json_data['props']['pageProps']['gameCardFeed']['modules'][0]['cards']
+            game_links = [e['cardData']['actions'][2]['resourceLocator']['resourceUrl'] for e in modules ]
             game_ids = [get_game_id(g) for g in game_links]
             game_stories = []
             for game_id, game_link in tqdm(zip(game_ids, game_links)):
-                time.sleep(3)
+                time.sleep(1)
                 response = requests.get("https://nba.com" + game_link)
                 try:
                     soup = BeautifulSoup(response.content, 'html.parser')
                     json_data = soup.select('[id^="__NEXT_DATA__"]')[0].text
                     json_data = json.loads(json_data)
-                    headline = json_data['props']['pageProps']['story']['header']['headline']
+                    headline = json_data['props']['pageProps']['headline']
                     story = " ".join(json_data['props']['pageProps']['story']['content'])
                     story = headline + "\n " + story
                     if story:
@@ -64,6 +70,9 @@ class NBAExtractor(Extractor):
                             "Game postponed")  # Handle case where game story element is not found after retry
                 except NoSuchElementException:
                     game_stories.append("No game story found")  # Handle case where game story element is not found
+                except Exception as e:
+                    game_stories.append("No game story found")
+                    print("No game story found")
             for game_id, game_story, game_link in tqdm(zip(game_ids, game_stories, game_links)):
                 box_score = nba.BoxScore(game_id=game_id).get_dict()
                 box_score = box_score['game']
@@ -90,7 +99,12 @@ class NBAExtractor(Extractor):
                 write_json_to_s3(json_content=content, bucket_name=BUCKET_NAME, key=file_path)
         except NoSuchElementException:
             print("No GameCard elements found")  # Handle case where GameCard elements are not found
-
+        except TypeError:
+            print("No GameCard elements found")
+        except IndexError:
+            print("No Games found")
+        except Exception:
+            print("An error occurred")
 
 
 class NFLExtractor(Extractor):
@@ -109,6 +123,7 @@ class NFLExtractor(Extractor):
 
     def extract_on_website(self, date, scrape_date):
         headers = {
+            'Time-Zone': 'US/Eastern',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
         }
 
@@ -181,3 +196,117 @@ class NFLExtractor(Extractor):
         except Exception as e:
             print(e)
 
+
+class NHLExtractor(Extractor):
+    def __init__(self, base_url: str):
+        super().__init__(base_url)
+
+    def extract_on_website(self, date, scrape_date):
+        headers = {'Time-Zone': 'US/Eastern'}
+        url = f"https://api-web.nhle.com/v1/score/{scrape_date}"
+        response = requests.get(url, headers=headers)
+        content = response.json()
+        games = content['games']
+        for game in tqdm(games):
+            away_abbrev = game['awayTeam']['abbrev']
+            home_abbrev = game['homeTeam']['abbrev']
+            away_team = self._get_team_name(away_abbrev)
+            away_team_url = away_team.lower().replace(" ", "-")
+            home_team = self._get_team_name(home_abbrev)
+            home_team_url = home_team.lower().replace(" ", "-")
+            month = self._get_month(int(scrape_date.split('-')[1]))
+            day = scrape_date.split('-')[2]
+            # remove leading 0
+            day = day.lstrip('0')
+            try:
+                game_id = game['id']
+
+                home_score = int(game['homeTeam']['score'])
+                away_score = int(game['awayTeam']['score'])
+
+                content_url = f"https://forge-dapi.d3.nhle.com/v2/content/en-us/stories/{away_team_url}-{home_team_url}-game-recap-{month}-{day}"
+
+                r = requests.get(content_url, headers=headers)
+                content = r.json()
+                text = [c['content'] for c in content['parts'] if c['type'] == 'markdown']
+                headline = content['headline']
+                story = headline + "\n " + " \n".join(text)
+            except Exception as e:
+                print(f"Failed to fetch story for {away_team} ({away_abbrev}) vs {home_team} ({home_abbrev}): {e} at {content_url}")
+                story = "No game story found"
+                home_score = '-'
+                away_score = '-'
+            folder_path = f"nhl/extracted_data/{scrape_date}"
+            file_path = f'{folder_path}/{game_id}.json'
+            data = {
+                "date": f"{date.day}.{date.month}.{date.year}",
+                "game_id": game_id,
+                "home_team": home_team,
+                "away_team": away_team,
+                "home_score": home_score,
+                "away_score": away_score,
+                "game_recap": story,
+                "box_score_url": game['gameCenterLink'],
+                "game_cast_url": f"https://www.nhl.com/news/{away_team_url}-{home_team_url}-game-recap-{month.lower()}-{day}" # game_center_links are 1-indexed
+            }
+            write_json_to_s3(json_content=data, bucket_name=BUCKET_NAME, key=file_path)
+
+
+
+
+
+    def _get_team_name(self, abbreviation: str) -> str:
+        # abbreviations of all nhl teams
+        teams = {
+            'ana': 'Anaheim Ducks',
+            'ari': 'Arizona Coyotes',
+            'bos': 'Boston Bruins',
+            'buf': 'Buffalo Sabres',
+            'cgy': 'Calgary Flames',
+            'car': 'Carolina Hurricanes',
+            'chi': 'Chicago Blackhawks',
+            'col': 'Colorado Avalanche',
+            'cbj': 'Columbus Blue Jackets',
+            'dal': 'Dallas Stars',
+            'det': 'Detroit Red Wings',
+            'edm': 'Edmonton Oilers',
+            'fla': 'Florida Panthers',
+            'lak': 'Los Angeles Kings',
+            'min': 'Minnesota Wild',
+            'mtl': 'Montreal Canadiens',
+            'nsh': 'Nashville Predators',
+            'njd': 'New Jersey Devils',
+            'nyi': 'New York Islanders',
+            'nyr': 'New York Rangers',
+            'ott': 'Ottawa Senators',
+            'phi': 'Philadelphia Flyers',
+            'pit': 'Pittsburgh Penguins',
+            'sjs': 'San Jose Sharks',
+            'sea': 'Seattle Kraken',
+            'stl': 'St Louis Blues',
+            'tbl': 'Tampa Bay Lightning',
+            'tor': 'Toronto Maple Leafs',
+            'van': 'Vancouver Canucks',
+            'vgk': 'Vegas Golden Knights',
+            'wsh': 'Washington Capitals',
+            'wpg': 'Winnipeg Jets',
+            'uta': 'Utah Hockey Club'
+        }
+        return teams.get(abbreviation.lower(), "Invalid Team")
+
+    def _get_month(self, month: int) -> str:
+        months = {
+            1: 'January',
+            2: 'February',
+            3: 'March',
+            4: 'April',
+            5: 'May',
+            6: 'June',
+            7: 'July',
+            8: 'August',
+            9: 'September',
+            10: 'October',
+            11: 'November',
+            12: 'December'
+        }
+        return months.get(month, "Invalid month")

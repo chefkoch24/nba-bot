@@ -6,7 +6,7 @@ def generate_local(date):
     title = date.strftime("%d.%m.%Y")
     scrape_date = get_scrape_date(date - datetime.timedelta(days=1))
 
-    for league in ['nba', 'nfl']:
+    for league in ['nba', 'nfl', 'nhl']:
         directory_path = f'{league}/generated_data/{scrape_date}'
         data = read_json_from_s3(bucket_name='lastnightscores', folder_path=directory_path)
         body = ""
@@ -30,5 +30,8 @@ def generate_local(date):
 
 
 # Insert the day you want to generate the blogpost for
-date = datetime.datetime(2024, 9, 1)
-generate_local(date)
+date = datetime.datetime(2024, 10, 8)
+end_date = datetime.datetime(2024, 10, 26)
+while date < end_date:
+    generate_local(date)
+    date += datetime.timedelta(days=1)
