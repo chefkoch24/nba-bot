@@ -22,7 +22,7 @@ AUTH = os.getenv('AUTH', default='USER:PASS')
 
 class Extractor(abc.ABC):
 
-    def __init__(self, base_url: str = 'https://www.nba.com/games?date='):
+    def __init__(self, base_url: str):
         self.base_url = base_url
 
     def extract_on_website(self, date, scrape_date) -> (typing.Dict, str):
@@ -38,23 +38,29 @@ class Extractor(abc.ABC):
 
 
 class NBAExtractor(Extractor):
+
+    def __init__(self, base_url: str):
+        super().__init__(base_url)
+
     def extract_on_website(self, date, scrape_date):
         response = requests.get(self.base_url + scrape_date)
         soup = BeautifulSoup(response.content, 'html.parser')
         time.sleep(3)
         try:
-            elements = soup.select('[class^="GameCard"]')
-            game_links = [e.get('href') for e in elements if e.get('href') is not None]
+            script_tag = soup.find('script', id='__NEXT_DATA__')
+            json_data = json.loads(script_tag.get_text())
+            modules = json_data['props']['pageProps']['gameCardFeed']['modules'][0]['cards']
+            game_links = [e['cardData']['actions'][2]['resourceLocator']['resourceUrl'] for e in modules ]
             game_ids = [get_game_id(g) for g in game_links]
             game_stories = []
             for game_id, game_link in tqdm(zip(game_ids, game_links)):
-                time.sleep(3)
+                time.sleep(1)
                 response = requests.get("https://nba.com" + game_link)
                 try:
                     soup = BeautifulSoup(response.content, 'html.parser')
                     json_data = soup.select('[id^="__NEXT_DATA__"]')[0].text
                     json_data = json.loads(json_data)
-                    headline = json_data['props']['pageProps']['story']['header']['headline']
+                    headline = json_data['props']['pageProps']['headline']
                     story = " ".join(json_data['props']['pageProps']['story']['content'])
                     story = headline + "\n " + story
                     if story:
@@ -64,6 +70,9 @@ class NBAExtractor(Extractor):
                             "Game postponed")  # Handle case where game story element is not found after retry
                 except NoSuchElementException:
                     game_stories.append("No game story found")  # Handle case where game story element is not found
+                except Exception as e:
+                    game_stories.append("No game story found")
+                    print("No game story found")
             for game_id, game_story, game_link in tqdm(zip(game_ids, game_stories, game_links)):
                 box_score = nba.BoxScore(game_id=game_id).get_dict()
                 box_score = box_score['game']
@@ -90,6 +99,12 @@ class NBAExtractor(Extractor):
                 write_json_to_s3(json_content=content, bucket_name=BUCKET_NAME, key=file_path)
         except NoSuchElementException:
             print("No GameCard elements found")  # Handle case where GameCard elements are not found
+        except TypeError:
+            print("No GameCard elements found")
+        except IndexError:
+            print("No Games found")
+        except Exception:
+            print("An error occurred")
 
 
 class NFLExtractor(Extractor):
@@ -201,12 +216,14 @@ class NHLExtractor(Extractor):
             home_team_url = home_team.lower().replace(" ", "-")
             month = self._get_month(int(scrape_date.split('-')[1]))
             day = scrape_date.split('-')[2]
-
-            game_id = game['id']
-
-            home_score = int(game['homeTeam']['score'])
-            away_score = int(game['awayTeam']['score'])
+            # remove leading 0
+            day = day.lstrip('0')
             try:
+                game_id = game['id']
+
+                home_score = int(game['homeTeam']['score'])
+                away_score = int(game['awayTeam']['score'])
+
                 content_url = f"https://forge-dapi.d3.nhle.com/v2/content/en-us/stories/{away_team_url}-{home_team_url}-game-recap-{month}-{day}"
 
                 r = requests.get(content_url, headers=headers)
@@ -215,8 +232,10 @@ class NHLExtractor(Extractor):
                 headline = content['headline']
                 story = headline + "\n " + " \n".join(text)
             except Exception as e:
-                print(f"Failed to fetch story for {away_team} ({away_abbrev}) vs {home_team} ({home_abbrev}): {e}")
+                print(f"Failed to fetch story for {away_team} ({away_abbrev}) vs {home_team} ({home_abbrev}): {e} at {content_url}")
                 story = "No game story found"
+                home_score = '-'
+                away_score = '-'
             folder_path = f"nhl/extracted_data/{scrape_date}"
             file_path = f'{folder_path}/{game_id}.json'
             data = {
@@ -270,7 +289,8 @@ class NHLExtractor(Extractor):
             'van': 'Vancouver Canucks',
             'vgk': 'Vegas Golden Knights',
             'wsh': 'Washington Capitals',
-            'wpg': 'Winnipeg Jets'
+            'wpg': 'Winnipeg Jets',
+            'uta': 'Utah Hockey Club'
         }
         return teams.get(abbreviation.lower(), "Invalid Team")
 
