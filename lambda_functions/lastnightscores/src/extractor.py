@@ -3,7 +3,7 @@ import json
 import os
 import time
 import typing
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
 from selenium.common import TimeoutException, NoSuchElementException, StaleElementReferenceException
@@ -108,6 +108,7 @@ class NFLExtractor(Extractor):
 
     def extract_on_website(self, date, scrape_date):
         headers = {
+            'Time-Zone': 'US/Eastern',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
         }
 
@@ -186,8 +187,9 @@ class NHLExtractor(Extractor):
         super().__init__(base_url)
 
     def extract_on_website(self, date, scrape_date):
-        url = "https://api-web.nhle.com/v1/score/2023-12-31"
-        response = requests.get(url)
+        headers = {'Time-Zone': 'US/Eastern'}
+        url = f"https://api-web.nhle.com/v1/score/{scrape_date}"
+        response = requests.get(url, headers=headers)
         content = response.json()
         games = content['games']
         for game in tqdm(games):
@@ -207,7 +209,7 @@ class NHLExtractor(Extractor):
             try:
                 content_url = f"https://forge-dapi.d3.nhle.com/v2/content/en-us/stories/{away_team_url}-{home_team_url}-game-recap-{month}-{day}"
 
-                r = requests.get(content_url)
+                r = requests.get(content_url, headers=headers)
                 content = r.json()
                 text = [c['content'] for c in content['parts'] if c['type'] == 'markdown']
                 headline = content['headline']
