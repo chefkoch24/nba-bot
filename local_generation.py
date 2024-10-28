@@ -30,8 +30,8 @@ def generate_local(date):
 
 
 # Insert the day you want to generate the blogpost for
-date = datetime.datetime(2024, 10, 8)
-end_date = datetime.datetime(2024, 10, 26)
+date = datetime.datetime(2024, 10, 26)
+end_date = datetime.datetime(2024, 10, 27)
 while date < end_date:
     generate_local(date)
     date += datetime.timedelta(days=1)

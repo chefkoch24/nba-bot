@@ -20,12 +20,12 @@ scrape_date = scrape_date.replace(hour=0, minute=0, second=0, microsecond=0)
 #    base_url=f"https://www.espn.com/nfl/scoreboard/_/week/{str(number_of_week)}/year/{str(season)}/seasontype/2")
 #nba_extractor.extract(scrape_date)
 #nfl_extractor.extract(scrape_date)
-date = datetime.datetime(2024, 10, 7)
-end_date = datetime.datetime(2024, 10, 25)
-while date < end_date:
-    rag = RAG()
-    rag.generate(date)
-    date += datetime.timedelta(days=1)
+#date = datetime.datetime(2024, 10, 26)
+#end_date = datetime.datetime(2024, 10, 27)
+#while date < end_date:
+rag = RAG()
+rag.generate(scrape_date)
+#date += datetime.timedelta(days=1)
 
 #g = Generator()
 #today = datetime.datetime.today()
