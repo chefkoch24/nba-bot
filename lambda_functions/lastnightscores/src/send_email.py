@@ -11,10 +11,13 @@ AWS_PROFILE = os.getenv('AWS_PROFILE')
 class Email:
     def send_email(self, subject, to_email, date):
         scrape_date = get_scrape_date(date)
-        for league in ['nba', 'nfl']:
+        body = ""
+        for league in ['nba', 'nfl', 'nhl']:
+
             directory_path = f'{league}/generated_data/{scrape_date}'
-            body = ""
             data = read_json_from_s3(bucket_name=BUCKET_NAME, folder_path=directory_path)#get_all_data(directory_path)
+            if len(data) != 0:
+                body += f"<h1>{league.upper()}</h1>"
             for d in data:
                 headline = f"<strong>{d['home_team']} {d['home_score']} - {d['away_score']} {d['away_team']} </strong> <br/>"
                 game_cast_url = d['game_cast_url']

@@ -9,8 +9,8 @@ from lambda_functions.lastnightscores.src.send_email import Email
 from lambda_functions.lastnightscores.src.utils import get_nfl_meta_data
 
 scrape_date = datetime.datetime(2024, 10, 26)
-scrape_date = scrape_date - datetime.timedelta(days=1)
-scrape_date = scrape_date.replace(hour=0, minute=0, second=0, microsecond=0)
+#scrape_date = scrape_date - datetime.timedelta(days=1)
+#scrape_date = scrape_date.replace(hour=0, minute=0, second=0, microsecond=0)
 
 #nhl_extractor = NHLExtractor(base_url="https://nhl.com/scores")
 #nhl_extractor.extract(scrape_date)
@@ -23,14 +23,14 @@ scrape_date = scrape_date.replace(hour=0, minute=0, second=0, microsecond=0)
 #date = datetime.datetime(2024, 10, 26)
 #end_date = datetime.datetime(2024, 10, 27)
 #while date < end_date:
-rag = RAG()
-rag.generate(scrape_date)
+#rag = RAG()
+#rag.generate(scrape_date)
 #date += datetime.timedelta(days=1)
 
 #g = Generator()
 #today = datetime.datetime.today()
 #g.generate(today)
-#email = Email()
-#subject = f"{os.getenv('SITENAME')} - {datetime.datetime.now().strftime('%d.%m.%Y')}"
-#email.send_email(subject, os.getenv('RECEIVE_EMAIL'), scrape_date)
+email = Email()
+subject = f"{os.getenv('SITENAME')} - {datetime.datetime.now().strftime('%d.%m.%Y')}"
+email.send_email(subject, os.getenv('RECEIVE_EMAIL'), scrape_date)
 
